@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <style>
+    @import url('https://fonts.googleapis.com/css?family=Quicksand');
+    body {
+        font-family: "Quicksand";
+    }
+    .bk-root {
+        font-family: "QuickSand" !important;
+        font-weight: "Bold";
+        font-size:19px
+    }
+    {% include 'styles.css' %}
+  </style>
+  <head>
+    <meta charset="utf-8">
+    {{ bokeh_css }}
+    {{ bokeh_js }}
+  </head>
+  <body>
+    {{ plot_div|indent(8) }}
+    {{ plot_script|indent(8) }}
+  </body>
+</html>

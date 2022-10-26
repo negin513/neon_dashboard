@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Kameron:wght@400;700&display=swap');
+
+.custom_select {
+    font-family: georgia;
+    font-size: 100px;
+    position: relative;
+    width: auto;
+    height: auto;
+}
+
+
+.custom_select label {
+    font-weight:bold;
+    color:black;
+}
+
+.custom_select select {
+    font-weight:bold;
+    color:dimgray;
+}
+
+.btn_style .bk-btn-default {
+        color: #FDFEFE;
+        background-color: #21618C ;
+        #border-color: #adadad !important;
+        border-color: #21618C;
+        box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125) !important;
+        font-size: 19px !important;
+}
+.btn_style .bk-btn-default:hover {
+        color: #FDFEFE;
+        background-color: #5DADE2;
+        border-color: #5DADE2;
+
+}
