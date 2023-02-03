@@ -12,11 +12,13 @@
 .custom_select label {
     font-weight:bold;
     color:black;
+    font-size: 100px;
+
 }
 
 .custom_select select {
     font-weight:bold;
-    color:dimgray;
+    color:black;
 }
 
 .btn_style .bk-btn-default {
@@ -32,4 +34,11 @@
         background-color: #5DADE2;
         border-color: #5DADE2;
 
+}
+
+h3 {
+    color: black;
+    font-family: 'Verdana';
+    font-size: 13pt;
+    text-align: center;
 }
