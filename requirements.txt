@@ -89,6 +89,7 @@ PySocks==1.7.1
 python-dateutil==2.8.2
 pytz==2022.2.1
 PyYAML==6.0
+wheel
 pyproj==2.6.1.post1
 pyzmq==24.0.1
 qtconsole==5.3.2
@@ -115,7 +116,6 @@ urllib3==1.26.11
 wcwidth==0.2.5
 webencodings==0.5.1
 websocket-client==1.4.1
-wheel
 widgetsnbextension==4.0.3
 xarray==2022.6.0
 zipp==3.8.1
