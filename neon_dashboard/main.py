@@ -144,16 +144,18 @@ failed_sites = []
 csv_dir = "neon_dashboard/data/"
 df_list =[]
 start_site = time.time()
-for neon_site in neon_sites:
+for neon_site in neon_sites[0:10]:
     try: 
         csv_file = "preprocessed_"+neon_site+"_2021.csv"
         this_df = pd.read_csv(os.path.join(csv_dir, csv_file))
+	print (this_df)
         df_list.append(this_df)
     except:
         #print ('THIS SITE FAILED:', neon_site)
         failed_sites.append(neon_site)
         pass
 
+print (failed_sites)
 df_all = pd.concat(df_list)
 
 end_site = time.time()
