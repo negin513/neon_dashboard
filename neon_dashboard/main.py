@@ -148,7 +148,7 @@ for neon_site in neon_sites[0:10]:
     try: 
         csv_file = "preprocessed_"+neon_site+"_2021.csv"
         this_df = pd.read_csv(os.path.join(csv_dir, csv_file))
-	print (this_df)
+	print (os.path.join(csv_dir, csv_file))
         df_list.append(this_df)
     except:
         #print ('THIS SITE FAILED:', neon_site)
