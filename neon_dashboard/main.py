@@ -141,7 +141,7 @@ print ('Total number of NEON sites for this demo:', len(neon_sites))
 years =['2018','2019','2020','2021']
 
 failed_sites = []
-csv_dir = "data/"
+csv_dir = "neon_dashboard/data/"
 df_list =[]
 start_site = time.time()
 for neon_site in neon_sites:
