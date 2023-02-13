@@ -8,6 +8,6 @@ pandas==1.5.0
 PyYAML==6.0
 scipy==1.9.1
 tornado==6.0.4
-pyproj==3.2.1
+pyproj
 xarray==2022.6.0
 
