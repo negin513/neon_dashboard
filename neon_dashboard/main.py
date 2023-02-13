@@ -3,49 +3,30 @@
 # Import Libraries
 import os
 import sys
-import glob
 import time
-
-from os.path import join
-from glob import glob
-
-
 import numpy as np
 import pandas as pd
 import xarray as xr
-import yaml 
-
-from bokeh.models import Panel, Tabs
-from bokeh.io import curdoc
-
+import yaml
 from scipy import stats
-from bokeh.themes import Theme
-from bokeh.models import ColumnDataSource, Slider , Dropdown, Select, PreText, Label, Slope, Band
+
+from bokeh.models import Panel, Tabs, Slope, Band
+from bokeh.io import curdoc, output_notebook, show
+from bokeh.layouts import row, column
 from bokeh.models import (Button, ColumnDataSource, CustomJS, DataTable,
-                          NumberFormatter, RangeSlider, TableColumn)
-from bokeh.layouts import row,column
+NumberFormatter, RangeSlider, TableColumn, Slider,
+Dropdown, Select, PreText, Label)
 from bokeh.models.formatters import DatetimeTickFormatter
-        
-from bokeh.io import output_notebook, show, curdoc
-from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, HoverTool
-
-from pyproj import Proj, transform
-from pyproj import Proj, transform
-from bokeh.plotting import figure, output_file, show
-from bokeh.tile_providers import CARTODBPOSITRON, get_provider
-from bokeh.transform import linear_cmap,factor_cmap, log_cmap
-
-from bokeh.tile_providers import get_provider, Vendors
+from bokeh.plotting import figure, output_file
+from bokeh.models import ColumnDataSource, HoverTool, Div
+from bokeh.tile_providers import (CARTODBPOSITRON, get_provider,
+WIKIMEDIA, STAMEN_TERRAIN, STAMEN_TONER,
+ESRI_IMAGERY, OSM)
+from bokeh.transform import linear_cmap, factor_cmap, log_cmap
 from bokeh.palettes import PRGn, RdYlGn
-from bokeh.transform import linear_cmap,factor_cmap, log_cmap
-from bokeh.models import GeoJSONDataSource, LinearColorMapper, ColorBar, NumeralTickFormatter
-
-from bokeh.plotting import figure, output_file, show
-from bokeh.tile_providers import CARTODBPOSITRON, get_provider
-from bokeh.layouts import row,column
-from bokeh.tile_providers import get_provider, WIKIMEDIA, CARTODBPOSITRON, STAMEN_TERRAIN, STAMEN_TONER, ESRI_IMAGERY, OSM
-from bokeh.models import Div
+from bokeh.models import (GeoJSONDataSource, LinearColorMapper, ColorBar,
+NumeralTickFormatter)
+from pyproj import Proj, transform
 
 TOOLTIP = """
 <div class="plot-tooltip">
@@ -93,7 +74,7 @@ class NeonSite ():
 
 
 def get_preprocessed_files(csv_dir, neon_site):
-    fnames = glob(join(csv_dir, 'preprocessed_'+neon_site+'_'+'*.csv'))
+    fnames = glob.glob(os.path.join(csv_dir, 'preprocessed_'+neon_site+'_'+'*.csv'))
     return fnames
 
 def in_notebook():
@@ -144,11 +125,11 @@ failed_sites = []
 csv_dir = "neon_dashboard/data/"
 df_list =[]
 start_site = time.time()
-for neon_site in neon_sites[0:10]:
+for neon_site in neon_sites:
     try: 
         csv_file = "preprocessed_"+neon_site+"_2021.csv"
         this_df = pd.read_csv(os.path.join(csv_dir, csv_file))
-	print (os.path.join(csv_dir, csv_file))
+        print (os.path.join(csv_dir, csv_file))
         df_list.append(this_df)
     except:
         #print ('THIS SITE FAILED:', neon_site)
@@ -157,7 +138,7 @@ for neon_site in neon_sites[0:10]:
 
 print (failed_sites)
 df_all = pd.concat(df_list)
-
+print (len(df_all))
 end_site = time.time()
 print("Reading all preprocessed files took:", end_site-start_site, "s.")
 
@@ -913,7 +894,7 @@ def diel_doc():
 
     button = Button(label="Download", css_classes=['btn_style'], width = 300)
     button.js_on_event("button_click", CustomJS(args=dict(source=source),
-                    code=open(join('.', "download.js")).read()))
+                    code=open(os.path.join('.', "download.js")).read()))
 
     def update_stats(df_new):
 
