@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <style>
+      @import url('https://fonts.googleapis.com/css?family=Quicksand');
+      body {
+        font-family: "Quicksand";
+      }
+      .bk-root {
+         font-family: "QuickSand" !important;
+         font-weight: "Bold";
+         font-size:19px
+      }
+      {% include 'styles.css' %}
+    </style>
+    {{ bokeh_css }}
+    {{ bokeh_js }}
+  </head>
+  <body>
+    {{ plot_div|indent(8) }}
+    {{ plot_script|indent(8) }}
+  </body>
+        <footer>
+          <p>By Negin Sobhani, Kelsey Emard, Olivia Cameron, Danica Lombardozzi, Will Wieder, Monica Morrison, Rebecca Morss</br> © Copyright 2022.</p>
+        </footer>
+</html>
