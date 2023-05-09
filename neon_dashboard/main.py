@@ -125,7 +125,7 @@ failed_sites = []
 csv_dir = "neon_dashboard/data/"
 df_list =[]
 start_site = time.time()
-neon_sites = neon_sites[0:10]
+neon_sites = neon_sites[0:8]
 for neon_site in neon_sites:
     try: 
         csv_file = "preprocessed_"+neon_site+"_2021.csv"
