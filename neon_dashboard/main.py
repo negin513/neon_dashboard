@@ -20,8 +20,7 @@ from bokeh.models.formatters import DatetimeTickFormatter
 from bokeh.plotting import figure, output_file
 from bokeh.models import ColumnDataSource, HoverTool, Div
 from bokeh.tile_providers import (CARTODBPOSITRON, get_provider,
-WIKIMEDIA, STAMEN_TERRAIN, STAMEN_TONER,
-ESRI_IMAGERY, OSM)
+WIKIMEDIA)
 from bokeh.transform import linear_cmap, factor_cmap, log_cmap
 from bokeh.palettes import PRGn, RdYlGn
 from bokeh.models import (GeoJSONDataSource, LinearColorMapper, ColorBar,
