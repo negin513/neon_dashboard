@@ -19,7 +19,7 @@ Dropdown, Select, PreText, Label)
 from bokeh.models.formatters import DatetimeTickFormatter
 from bokeh.plotting import figure, output_file
 from bokeh.models import ColumnDataSource, HoverTool, Div
-from bokeh.tile_providers import (CARTODBPOSITRON, get_provider,
+from bokeh.tile_providers import ( get_provider,
 WIKIMEDIA)
 from bokeh.transform import linear_cmap, factor_cmap, log_cmap
 from bokeh.palettes import PRGn, RdYlGn
@@ -124,7 +124,7 @@ failed_sites = []
 csv_dir = "neon_dashboard/data/"
 df_list =[]
 start_site = time.time()
-neon_sites = neon_sites[0:8]
+#neon_sites = neon_sites[0:8]
 for neon_site in neon_sites:
     try: 
         csv_file = "preprocessed_"+neon_site+"_2021.csv"
