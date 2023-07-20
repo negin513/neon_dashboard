@@ -1,67 +1,98 @@
 #! /usr/bin/env python
+"""
+Author: Negin Sobhani
+Created on: 2022-10-01
+Contact Info: negins@ucar.edu
+"""
 
-# Import Libraries
+# Standard Library Imports
 import os
 import sys
 import time
+
+# Related Third-Party Imports
+from bokeh.io import curdoc, output_notebook, show
+from bokeh.layouts import column, row
+from bokeh.models import (Band, Button, ColorBar, ColumnDataSource, CustomJS,
+                          DataTable, Div, Dropdown, GeoJSONDataSource, HoverTool,
+                          Label, LinearColorMapper, NumeralTickFormatter, NumberFormatter, Panel, 
+                          PreText, RangeSlider, Select, Slider, Slope, Tabs, TableColumn)
+
+from bokeh.models.formatters import DatetimeTickFormatter
+from bokeh.palettes import PRGn, RdYlGn
+from bokeh.plotting import figure, output_file
+from bokeh.tile_providers import WIKIMEDIA, get_provider
+from bokeh.transform import factor_cmap, linear_cmap, log_cmap
+
+from pyproj import Proj, transform
+
+from scipy import stats
+
 import numpy as np
 import pandas as pd
 import xarray as xr
 import yaml
-from scipy import stats
 
-from bokeh.models import Panel, Tabs, Slope, Band
-from bokeh.io import curdoc, output_notebook, show
-from bokeh.layouts import row, column
-from bokeh.models import (Button, ColumnDataSource, CustomJS, DataTable,
-NumberFormatter, RangeSlider, TableColumn, Slider,
-Dropdown, Select, PreText, Label)
-from bokeh.models.formatters import DatetimeTickFormatter
-from bokeh.plotting import figure, output_file
-from bokeh.models import ColumnDataSource, HoverTool, Div
-from bokeh.tile_providers import ( get_provider,
-WIKIMEDIA)
-from bokeh.transform import linear_cmap, factor_cmap, log_cmap
-from bokeh.palettes import PRGn, RdYlGn
-from bokeh.models import (GeoJSONDataSource, LinearColorMapper, ColorBar,
-NumeralTickFormatter)
-from pyproj import Proj, transform
+# ----------------------------------
+# -- only for running in the notebook:
+def in_notebook():
+    from IPython import get_ipython
 
-TOOLTIP = """
-<div class="plot-tooltip">
-    <div>
-        <h3 style="text-align:center">@Site</h3>
-        <span style="font-weight: bold;">@site_name, @state <br>
+    if get_ipython():
+        return True
+    else:
+        return False
 
-    </div>
-    <div>
-        <span style="font-weight: bold;">Lon , Lat : </span> @Lon , @Lat <br>
-        <span style="font-weight: bold;">Dominant PFT : </span>@pft 
-    </div>
-</div>
-"""
 
-q_TOOLTIP = """
-<div class="plotq-tooltip">
-    <div>
-        <span style="font-weight: bold;">NEON : </span> @NEON <br>
-        <span style="font-weight: bold;">CTSM : </span> @CLM <br>
-    </div>
-</div>
-"""
+ShowWebpage = True
 
-p_TOOLTIP = """
-<div class="plotq-tooltip">
-    <div>
-        <span style="font-weight: bold;">Time : </span> @time <br>
-        <span style="font-weight: bold;">NEON : </span> @NEON <br>
-        <span style="font-weight: bold;">CTSM : </span> @CLM <br>
-    </div>
-</div>
-"""
-COL_TPL = """
-<%= get_icon(type.toLowerCase()) %> <%= type %>
-"""
+if in_notebook():
+    ShowWebpage = False
+
+if ShowWebpage:
+    pass
+else:
+    output_notebook()
+
+# ----------------------------------
+# -- Tooltips for our plots
+TOOLTIP = (
+    '<div class="plot-tooltip">'
+    '    <div>'
+    '        <h3 style="text-align:center">@Site</h3>'
+    '        <span style="font-weight: bold;">@site_name, @state </span><br>'
+    '    </div>'
+    '    <div>'
+    '        <span style="font-weight: bold;">Lon , Lat : </span> @Lon , @Lat <br>'
+    '        <span style="font-weight: bold;">Dominant PFT : </span>@pft'
+    '    </div>'
+    '</div>'
+)
+
+q_TOOLTIP = (
+    '<div class="plotq-tooltip">'
+    '    <div>'
+    '        <span style="font-weight: bold;">NEON : </span> @NEON <br>'
+    '        <span style="font-weight: bold;">CTSM : </span> @CLM <br>'
+    '    </div>'
+    '</div>'
+)
+
+p_TOOLTIP = (
+    '<div class="plotq-tooltip">'
+    '    <div>'
+    '        <span style="font-weight: bold;">Time : </span> @time <br>'
+    '        <span style="font-weight: bold;">NEON : </span> @NEON <br>'
+    '        <span style="font-weight: bold;">CTSM : </span> @CLM <br>'
+    '    </div>'
+    '</div>'
+)
+
+COL_TPL = "<%= get_icon(type.toLowerCase()) %> <%= type %>"
+
+
+
+
 
 class NeonSite ():
   def __init__(self, name, long_name, lat, lon, state):
@@ -76,22 +107,6 @@ def get_preprocessed_files(csv_dir, neon_site):
     fnames = glob.glob(os.path.join(csv_dir, 'preprocessed_'+neon_site+'_'+'*.csv'))
     return fnames
 
-def in_notebook():
-    from IPython import get_ipython
-    if get_ipython():
-        return True
-    else:
-        return False  
-
-ShowWebpage = True
-
-if in_notebook():
-    ShowWebpage = False
-
-if ShowWebpage:
-    pass
-else:
-    output_notebook()
 
 
 neon_sites = ['ABBY','BART', 'HARV', 'BLAN',
