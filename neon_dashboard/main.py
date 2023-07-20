@@ -33,6 +33,8 @@ import pandas as pd
 import xarray as xr
 import yaml
 
+from data_utils import *
+
 # ----------------------------------
 # -- only for running in the notebook:
 def in_notebook():
@@ -89,23 +91,19 @@ p_TOOLTIP = (
 )
 
 COL_TPL = "<%= get_icon(type.toLowerCase()) %> <%= type %>"
+# ----------------------------------
+
+# ----------------- #
+#-- default values
+# ----------------- #
+
+default_site = 'ABBY'
+default_freq = 'daily'
+default_var = 'EFLX_LH_TOT'
 
 
-
-
-
-class NeonSite ():
-  def __init__(self, name, long_name, lat, lon, state):
-    self.site_code = name
-    self.long_name = long_name
-    self.lat = lat
-    self.lon = lon
-    self.state = state
-
-
-def get_preprocessed_files(csv_dir, neon_site):
-    fnames = glob.glob(os.path.join(csv_dir, 'preprocessed_'+neon_site+'_'+'*.csv'))
-    return fnames
+# ----------------------------------
+# -- Functions and objects for this code
 
 
 
@@ -121,115 +119,15 @@ neon_sites = ['ABBY','BART', 'HARV', 'BLAN',
             'ABBY', 'WREF', 'SJER', 'SOAP',
             'TEAK', 'TOOL', 'BARR', 'BONA',
             'DEJU', 'HEAL']
-            
-neon_sites_pft = pd.read_csv('data/all_neon_sites.csv')
-#neon_sites = neon_sites_pft['Site'].to_list()
-
-all_sites ={}
-for index, this_row in neon_sites_pft.iterrows():
-    this_site = NeonSite(this_row['Site'],this_row['site_name'],
-                         this_row ['Lat'],this_row['Lon'],this_row['state'])
-    all_sites[this_row['Site']]=this_site
-
-print ('Total number of NEON sites for this demo:', len(neon_sites))
-
-years =['2018','2019','2020','2021']
-
-failed_sites = []
-csv_dir = "neon_dashboard/data/"
-df_list =[]
-start_site = time.time()
-#neon_sites = neon_sites[0:8]
-for neon_site in neon_sites:
-    try: 
-        csv_file = "preprocessed_"+neon_site+"_2021.csv"
-        this_df = pd.read_csv(os.path.join(csv_dir, csv_file))
-        print (os.path.join(csv_dir, csv_file))
-        df_list.append(this_df)
-    except:
-        #print ('THIS SITE FAILED:', neon_site)
-        failed_sites.append(neon_site)
-        pass
-
-print (failed_sites)
-df_all = pd.concat(df_list)
-print (len(df_all))
-end_site = time.time()
-print("Reading all preprocessed files took:", end_site-start_site, "s.")
-
-print ("Number of failed sites : ", len(failed_sites))
-print (*failed_sites, sep=" \n")
-
-# -- fix time formatting
-df_all['time'] = pd.to_datetime(df_all['time'], errors='coerce')
-
-#-- extract year, month, day, hour information from time
-df_all['year'] = df_all['time'].dt.year
-df_all['month'] = df_all['time'].dt.month
-df_all['day'] = df_all['time'].dt.day
-df_all['hour'] = df_all['time'].dt.hour
-df_all['season'] = ((df_all['month']%12+3)//3).map({1:'DJF', 2: 'MAM', 3:'JJA', 4:'SON'})
-
-df_all['ELAI'] = np.nan
-
-#df_all ['NEE'] = df_all['NEE']*60*60*24
-#df_all ['sim_NEE'] = df_all['sim_NEE']*60*60*24
-#df_all ['GPP'] = df_all['GPP']*60*60*24
-#df_all ['sim_GPP'] = df_all['sim_GPP']*60*60*24
 
 
+neon_sites_file = 'data/all_neon_sites.csv'
+csv_dir = "data/preprocessed_data"
+
+years = ['2018','2019','2020','2021']
 freq_list = ['all','hourly','daily','monthly']
 
-
-def get_data (df_all, var, freq, this_site):
-    print ('this_site', this_site)
-    df=df_all[df_all['site']==this_site]
-    sim_var_name = "sim_"+var
-
-    if freq=="monthly":
-        df = df.groupby(['year','month']).mean().reset_index()
-        df["day"]=15
-        df['time']=pd.to_datetime(df[["year", "month","day"]])
-        #if var=='NEE' or var=='GPP':
-        #    df
-
-    elif freq=="daily":
-        df = df.groupby(['year','month','day']).mean().reset_index()
-        df['time']=pd.to_datetime(df[["year", "month", "day"]])
-
-    elif freq=="hourly":
-        df = df.groupby(['year','month','day','hour']).mean().reset_index()
-        df['time']=pd.to_datetime(df[["year", "month", "day","hour"]])
-    
-    elif freq=="all":
-        df = df
-    
-    df_new = pd.DataFrame({'time':df['time'],'NEON':df[var],'CLM':df[sim_var_name]})
-    
-    #print(df_new)
-    return df_new
-
-def find_regline(df, var, sim_var_name):
-        # find the trendline:
-        #sim_var_name = "sim_"+var
-        print (var)
-        print (sim_var_name)
-
-        df_temp = df[[var, sim_var_name]]#.dropna()
-        
-        #df_temp = pd.DataFrame(df, columns)
-        df_temp.dropna(inplace=True)
-        #print (df_temp)
-
-        #z = np.polyfit(df_temp[var], df_temp[sim_var_name], 1)
-        #p = np.poly1d(z)
-        
-        #-----
-        result = stats.linregress(df_temp[var], df_temp[sim_var_name])
-        return result
-    
-
-plot_vars =['FSH','EFLX_LH_TOT','Rnet','NEE','GPP','ELAI']
+plot_vars = ['FSH','EFLX_LH_TOT','Rnet','NEE','GPP','ELAI']
 vars_dict = {'FSH': 'Sensible Heat Flux ', 'EFLX_LH_TOT': 'Latent Heat Flux ',
      'Rnet': 'Net Radiation ', \
      'GPP': 'Gross Primary Production','NEE': 'Net Ecosystem Exchange', \
@@ -237,7 +135,19 @@ vars_dict = {'FSH': 'Sensible Heat Flux ', 'EFLX_LH_TOT': 'Latent Heat Flux ',
 
 vars_dict2 = {y: x for x, y in vars_dict.items()}
 
-# time-series with Dropdown menu for variables
+
+all_sites, neon_sites_pft = generate_sites (neon_sites_file)
+
+start_time = time.time()
+df_all, failed_sites = load_and_preprocess_data(neon_sites, csv_dir)
+elapsed_time = time.time() - start_time
+
+print(f"Reading all preprocessed files took: {elapsed_time:.2f} seconds.")
+print(f"Number of failed sites: {len(failed_sites)}")
+print("\n".join(failed_sites))
+
+
+#-- time-series with Dropdown menu for variables
 
 # make a simple plot time-series
 chosentile = get_provider(WIKIMEDIA)
@@ -258,18 +168,12 @@ x_transform, y_trasnform = transform(outProj,inProj,x,y)
 neon_sites_pft ['map_lat'] = y_trasnform
 neon_sites_pft ['map_lon'] = x_transform
 
-def get_neon_site (neon_sites_pft, site_name):
-    this_site = neon_sites_pft[neon_sites_pft['Site']==site_name]
-    return this_site
+
 
 def simple_tseries():
-    #-- default values:
+
     
-    default_site = 'ABBY'
-    default_freq = 'daily'
-    defualt_var = 'EFLX_LH_TOT'
-    
-    df_new = get_data(df_all, defualt_var,default_freq,default_site)
+    df_new = get_data(df_all, default_var,default_freq,default_site)
     source = ColumnDataSource(df_new)
 
     this_site = get_neon_site(neon_sites_pft, default_site)
@@ -380,6 +284,7 @@ def simple_tseries():
 
     p_width = 1300
     p_height = 550
+    neon_site = "ABBY"
     p = figure (tools=p_tools, x_axis_type="datetime",
                 title= "Neon Time-Series "+neon_site , width = p_width, height =p_height)
     tseries_plot(p)
@@ -434,7 +339,7 @@ def simple_tseries():
     #)
     
 
-    menu = Select(options=list(vars_dict2.keys()),value=vars_dict[defualt_var],
+    menu = Select(options=list(vars_dict2.keys()),value=vars_dict[default_var],
                   title='Variable', css_classes=['custom_select']) 
     menu_freq = Select(options=freq_list,value=default_freq, title='Frequency') 
     menu_site = Select(options=neon_sites,value=default_site, title='Neon Site') 
@@ -531,6 +436,9 @@ def simple_tseries():
     return tab
 
 
+
+
+### --- Diel Cycle Plot : 
 plot_vars =['FSH','EFLX_LH_TOT','Rnet','NEE','GPP']
 valid_vars = plot_vars
 
