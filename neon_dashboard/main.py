@@ -33,26 +33,9 @@ import pandas as pd
 import xarray as xr
 import yaml
 
-# ----------------------------------
-# -- only for running in the notebook:
-def in_notebook():
-    from IPython import get_ipython
-
-    if get_ipython():
-        return True
-    else:
-        return False
 
 
-ShowWebpage = True
 
-if in_notebook():
-    ShowWebpage = False
-
-if ShowWebpage:
-    pass
-else:
-    output_notebook()
 
 # ----------------------------------
 # -- Tooltips for our plots
@@ -90,10 +73,24 @@ p_TOOLTIP = (
 
 COL_TPL = "<%= get_icon(type.toLowerCase()) %> <%= type %>"
 
+years =['2018','2019','2020','2021']
+
+freq_list = ['all','hourly','daily','monthly']
 
 
+plot_vars =['FSH','EFLX_LH_TOT','Rnet','NEE','GPP','ELAI']
+vars_dict = {
+    'FSH': 'Sensible Heat Flux ', 
+    'EFLX_LH_TOT': 'Latent Heat Flux ',
+    'Rnet': 'Net Radiation ', 
+    'GPP': 'Gross Primary Production',
+    'NEE': 'Net Ecosystem Exchange', 
+    'ELAI': 'Effective Leaf Area Index'
+}
 
+vars_dict2 = {y: x for x, y in vars_dict.items()}
 
+# //////////////////////////////////////////////////////////////
 class NeonSite ():
   def __init__(self, name, long_name, lat, lon, state):
     self.site_code = name
@@ -102,85 +99,7 @@ class NeonSite ():
     self.lon = lon
     self.state = state
 
-
-def get_preprocessed_files(csv_dir, neon_site):
-    fnames = glob.glob(os.path.join(csv_dir, 'preprocessed_'+neon_site+'_'+'*.csv'))
-    return fnames
-
-
-
-neon_sites = ['ABBY','BART', 'HARV', 'BLAN',
-            'SCBI', 'SERC', 'DSNY', 'JERC',
-            'OSBS', 'GUAN', 'LAJA', 'STEI',
-            'TREE', 'UNDE', 'KONA', 'KONZ',
-            'UKFS', 'GRSM', 'MLBS', 'ORNL',
-            'DELA', 'LENO', 'TALL', 'DCFS',
-            'NOGP', 'WOOD', 'CPER', 'RMNP',
-            'STER', 'CLBJ', 'OAES', 'YELL',
-            'MOAB', 'JORN', 'SRER', 'ONAQ',
-            'ABBY', 'WREF', 'SJER', 'SOAP',
-            'TEAK', 'TOOL', 'BARR', 'BONA',
-            'DEJU', 'HEAL']
-            
-neon_sites_pft = pd.read_csv('data/all_neon_sites.csv')
-#neon_sites = neon_sites_pft['Site'].to_list()
-
-all_sites ={}
-for index, this_row in neon_sites_pft.iterrows():
-    this_site = NeonSite(this_row['Site'],this_row['site_name'],
-                         this_row ['Lat'],this_row['Lon'],this_row['state'])
-    all_sites[this_row['Site']]=this_site
-
-print ('Total number of NEON sites for this demo:', len(neon_sites))
-
-years =['2018','2019','2020','2021']
-
-failed_sites = []
-csv_dir = "neon_dashboard/data/"
-df_list =[]
-start_site = time.time()
-#neon_sites = neon_sites[0:8]
-for neon_site in neon_sites:
-    try: 
-        csv_file = "preprocessed_"+neon_site+"_2021.csv"
-        this_df = pd.read_csv(os.path.join(csv_dir, csv_file))
-        print (os.path.join(csv_dir, csv_file))
-        df_list.append(this_df)
-    except:
-        #print ('THIS SITE FAILED:', neon_site)
-        failed_sites.append(neon_site)
-        pass
-
-print (failed_sites)
-df_all = pd.concat(df_list)
-print (len(df_all))
-end_site = time.time()
-print("Reading all preprocessed files took:", end_site-start_site, "s.")
-
-print ("Number of failed sites : ", len(failed_sites))
-print (*failed_sites, sep=" \n")
-
-# -- fix time formatting
-df_all['time'] = pd.to_datetime(df_all['time'], errors='coerce')
-
-#-- extract year, month, day, hour information from time
-df_all['year'] = df_all['time'].dt.year
-df_all['month'] = df_all['time'].dt.month
-df_all['day'] = df_all['time'].dt.day
-df_all['hour'] = df_all['time'].dt.hour
-df_all['season'] = ((df_all['month']%12+3)//3).map({1:'DJF', 2: 'MAM', 3:'JJA', 4:'SON'})
-
-df_all['ELAI'] = np.nan
-
-#df_all ['NEE'] = df_all['NEE']*60*60*24
-#df_all ['sim_NEE'] = df_all['sim_NEE']*60*60*24
-#df_all ['GPP'] = df_all['GPP']*60*60*24
-#df_all ['sim_GPP'] = df_all['sim_GPP']*60*60*24
-
-
-freq_list = ['all','hourly','daily','monthly']
-
-
+# //////////////////////////////////////////////////////////////
 def get_data (df_all, var, freq, this_site):
     print ('this_site', this_site)
     df=df_all[df_all['site']==this_site]
@@ -209,6 +128,7 @@ def get_data (df_all, var, freq, this_site):
     #print(df_new)
     return df_new
 
+# //////////////////////////////////////////////////////////////
 def find_regline(df, var, sim_var_name):
         # find the trendline:
         #sim_var_name = "sim_"+var
@@ -228,41 +148,13 @@ def find_regline(df, var, sim_var_name):
         result = stats.linregress(df_temp[var], df_temp[sim_var_name])
         return result
     
-
-plot_vars =['FSH','EFLX_LH_TOT','Rnet','NEE','GPP','ELAI']
-vars_dict = {'FSH': 'Sensible Heat Flux ', 'EFLX_LH_TOT': 'Latent Heat Flux ',
-     'Rnet': 'Net Radiation ', \
-     'GPP': 'Gross Primary Production','NEE': 'Net Ecosystem Exchange', \
-     'ELAI': 'Effective Leaf Area Index'}
-
-vars_dict2 = {y: x for x, y in vars_dict.items()}
-
-# time-series with Dropdown menu for variables
-
-# make a simple plot time-series
-chosentile = get_provider(WIKIMEDIA)
-inProj = Proj(init='epsg:3857')
-outProj = Proj(init='epsg:4326')
-
-world_lon1, world_lat1 = transform(outProj,inProj,-130,0)
-world_lon2, world_lat2 = transform(outProj,inProj,-60,60)
-cartodb = get_provider(WIKIMEDIA)
-
-us_lon1, us_lat1 = transform(outProj,inProj,-130,23)
-us_lon2, us_lat2 = transform(outProj,inProj,-65,49)
-
-
-x= neon_sites_pft['Lon']
-y = neon_sites_pft['Lat']
-x_transform, y_trasnform = transform(outProj,inProj,x,y)
-neon_sites_pft ['map_lat'] = y_trasnform
-neon_sites_pft ['map_lon'] = x_transform
-
+# //////////////////////////////////////////////////////////////
 def get_neon_site (neon_sites_pft, site_name):
     this_site = neon_sites_pft[neon_sites_pft['Site']==site_name]
     return this_site
 
-def simple_tseries():
+# //////////////////////////////////////////////////////////////
+def simple_tseries(neon_sites_pft,neon_site):
     #-- default values:
     
     default_site = 'ABBY'
@@ -391,8 +283,7 @@ def simple_tseries():
     q_width = 350
     q_height = 350
     q = figure(tools=q_tools,width=q_width, 
-               height=q_height, x_range=p.y_range, y_range=p.y_range, tooltips=q_TOOLTIP,
-)
+               height=q_height, x_range=p.y_range, y_range=p.y_range, tooltips=q_TOOLTIP)
     scatter_plot(q)
 
     w_width = 375
@@ -530,11 +421,7 @@ def simple_tseries():
     #""", Loader=yaml.FullLoader))
     return tab
 
-
-plot_vars =['FSH','EFLX_LH_TOT','Rnet','NEE','GPP']
-valid_vars = plot_vars
-
-
+# //////////////////////////////////////////////////////////////
 def get_diel_data (df, var, season, this_site):
 
     print ('this site:', this_site)
@@ -573,8 +460,7 @@ def get_diel_data (df, var, season, this_site):
 
     return df_new
 
-
-
+# //////////////////////////////////////////////////////////////
 def fit_func(df):
     df_temp = df[['NEON', 'CLM']]
     print ('df_temp:')
@@ -600,8 +486,8 @@ def fit_func(df):
     print (y_fit)
     return x_fit, y_fit
 
-
-def diel_doc():
+# //////////////////////////////////////////////////////////////
+def diel_doc(neon_sites_pft):
     #-- default values:
 
     default_site = 'ABBY'
@@ -1037,27 +923,23 @@ def diel_doc():
     #doc.add_root(layout)
     tab = Panel(child = layout, title = 'Diurnal Cycle')
     return tab
-    
-    
-    
-    
-        
 
-# output_notebook()
-
-#if ShowWebpage:
-#    simple_tseries(curdoc())
-#else:
-#    #show(bkapp)
-#    #show(simple_tseries)
     
-    
+# //////////////////////////////////////////////////////////////////////////////////////
+if __name__.startswith('bokeh'):
 
-tab_1 = simple_tseries()
-tab_2 = diel_doc()
-tabs=Tabs(tabs=[tab_1,tab_2])
-#doc.add_root(tabs)
+    print("!!!! main.py START...")
 
-curdoc().add_root(tabs)
-    
-#make_doc(doc)
+    from .preload import Preload
+
+    neon_sites     = Preload.neon_sites
+    neon_sites_pft = Preload.neon_sites_pft
+    df_all         = Preload.df_all
+    us_lon1, us_lat1, us_lon2, us_lat2=Preload.us_lon1, Preload.us_lat1, Preload.us_lon2, Preload.us_lat2
+
+    chosentile = get_provider(WIKIMEDIA)
+    cartodb = get_provider(WIKIMEDIA)
+    neon_site=Preload.neon_sites[-1]
+    curdoc().add_root(Tabs(tabs=[
+        simple_tseries(neon_sites_pft,neon_site),
+        diel_doc(neon_sites_pft)]))
