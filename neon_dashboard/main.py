@@ -168,7 +168,10 @@ x_transform, y_trasnform = transform(outProj,inProj,x,y)
 neon_sites_pft ['map_lat'] = y_trasnform
 neon_sites_pft ['map_lon'] = x_transform
 
+from dask.distributed import Client
 
+client = Client(n_workers=4)
+client
 
 def simple_tseries():
 
@@ -178,7 +181,7 @@ def simple_tseries():
 
     this_site = get_neon_site(neon_sites_pft, default_site)
     print (this_site)
-
+    print ('!!!!')
     source2 = ColumnDataSource(this_site)
 
 
@@ -378,7 +381,7 @@ def simple_tseries():
         #source2.stream(this_site)
         #print (menu.value)
         #print (menu_freq.value)
-        print (menu_site.value)
+        #print (menu_site.value)
         plot_title = ('NEON Site : '+
                       this_site['site_name'].values[0].replace(r'[][]', ' ') +', '+
                       this_site['state'].values[0].replace(r'[][]', ' ') +
@@ -437,7 +440,7 @@ def simple_tseries():
 
 
 
-
+# --------------------------# 
 ### --- Diel Cycle Plot : 
 plot_vars =['FSH','EFLX_LH_TOT','Rnet','NEE','GPP']
 valid_vars = plot_vars
@@ -963,7 +966,7 @@ def diel_doc():
 
 tab_1 = simple_tseries()
 tab_2 = diel_doc()
-tabs=Tabs(tabs=[tab_1,tab_2])
+tabs=Tabs(tabs=[tab_1])
 #doc.add_root(tabs)
 
 curdoc().add_root(tabs)

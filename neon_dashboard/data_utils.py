@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from pyproj import Proj, transform
+import dask.dataframe as dd
 
 
 class NeonSite:
@@ -107,18 +108,18 @@ def load_and_preprocess_data(neon_sites, csv_dir):
     for neon_site in neon_sites:
         try:
             csv_file = f"preprocessed_{neon_site}_2021.csv"
-            df = pd.read_csv(os.path.join(csv_dir, csv_file))
+            df = dd.read_csv(os.path.join(csv_dir, csv_file),parse_dates=['time'])
             df_list.append(df)
         except Exception as e:
             print(f"Error loading data for site {neon_site}: {str(e)}")
             failed_sites.append(neon_site)
 
-    df_all = pd.concat(df_list)
+    df_all = dd.concat(df_list)
     end_site = time.time()
     print("Reading all preprocessed files took:", end_site - start_site, "s.")
 
     # Fix time formatting
-    df_all['time'] = pd.to_datetime(df_all['time'], errors='coerce')
+    #df_all['time'] = pd.to_datetime(df_all['time'], errors='coerce')
 
     # Extract year, month, day, hour information from time
     df_all['year'] = df_all['time'].dt.year
@@ -147,28 +148,33 @@ def get_data(df_all, var, freq, this_site):
     Returns:
         df_new (pd.DataFrame): DataFrame containing the selected data.
     """
+    start_time = time.time()
+
     print('this_site', this_site)
-    df = df_all[df_all['site'] == this_site]
+    df = df_all[df_all['site'] == this_site].compute()
     sim_var_name = "sim_" + var
 
     if freq == "monthly":
-        df = df.groupby(['year', 'month']).mean().reset_index()
+        df = df.groupby(['year', 'month']).mean().reset_index()#.compute()
         df["day"] = 15
-        df['time'] = pd.to_datetime(df[["year", "month", "day"]])
+        df['time'] = dd.to_datetime(df[["year", "month", "day"]])
 
     elif freq == "daily":
-        df = df.groupby(['year', 'month', 'day']).mean().reset_index()
-        df['time'] = pd.to_datetime(df[["year", "month", "day"]])
+        df = df.groupby(['year', 'month', 'day']).mean().reset_index()#.compute()
+        df['time'] = dd.to_datetime(df[["year", "month", "day"]])
+        
 
     elif freq == "hourly":
-        df = df.groupby(['year', 'month', 'day', 'hour']).mean().reset_index()
-        df['time'] = pd.to_datetime(df[["year", "month", "day", "hour"]])
+        df = df.groupby(['year', 'month', 'day', 'hour']).mean().reset_index()#.compute()
+        df['time'] = dd.to_datetime(df[["year", "month", "day", "hour"]])
 
     elif freq == "all":
-        df = df
+        df = df#.compute()
 
     df_new = pd.DataFrame({'time': df['time'], 'NEON': df[var], 'CLM': df[sim_var_name]})
 
+    end_time = time.time()
+    print("Computing all data took:", end_time - start_time, "s.")
     return df_new
 
 def find_regline(df, var, sim_var_name):
