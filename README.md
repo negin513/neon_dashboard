@@ -2,6 +2,27 @@
 
 Neon Dashboard is a web-based visualization tool for exploring and analyzing neon data. It was created as part of the research project outlined in the paper (** add link).
 
+There are many ways to run this application on your local machine:
+
+## 🚀 Easiest Method: How to Clone Docker Image and Start the Bokeh Application from Docker Hub 📦
+
+To quickly get started with the Neon Dashboard Bokeh application, you can use the easiest method by pulling the pre-built Docker image from Docker Hub. 📦
+
+Open a terminal or command prompt and run the following command to pull the image:
+
+```bash
+docker pull negin513/neon-app
+```
+
+Once the image is pulled successfully, run the Bokeh application in a Docker container with the following command. This will forward the port `8080`, making the application publicly available: 🚀
+
+```bash
+docker run -p 8080:5006 negin513/neon-app
+```
+
+The Bokeh application should now be up and running inside the Docker container. You can access it in your web browser at http://localhost:8080. 🎉🎉🎉
+
+
 ## 🚀 How to Run with Container? 🚀
 
 To run Neon Dashboard using Docker container, follow these steps:
@@ -65,10 +86,6 @@ To run Neon Dashboard without using a Docker container, you'll need to have Cond
    The `--allow-websocket-origin` flag is used to enable connections from the local host.
 
 5. The Neon Dashboard should now be accessible in your web browser at `http://localhost:5006`.
-
-
-
-
 
 
 
