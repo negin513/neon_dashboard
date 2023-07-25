@@ -21,7 +21,6 @@ from bokeh.models import (Band, Button, ColorBar, ColumnDataSource, CustomJS,
 from bokeh.models.formatters import DatetimeTickFormatter
 from bokeh.palettes import PRGn, RdYlGn
 from bokeh.plotting import figure, output_file
-from bokeh.tile_providers import WIKIMEDIA, get_provider
 from bokeh.transform import factor_cmap, linear_cmap, log_cmap
 
 from pyproj import Proj, transform
@@ -937,8 +936,13 @@ if __name__.startswith('bokeh'):
     df_all         = Preload.df_all
     us_lon1, us_lat1, us_lon2, us_lat2=Preload.us_lon1, Preload.us_lat1, Preload.us_lon2, Preload.us_lat2
 
-    chosentile = get_provider(WIKIMEDIA)
-    cartodb = get_provider(WIKIMEDIA)
+    # getting 403 (permission denied on WIKIMEDIA)
+    #from bokeh.tile_providers import WIKIMEDIA, get_provider
+    #chosentile = get_provider(WIKIMEDIA)
+
+    from bokeh.tile_providers import get_provider, Vendors
+    chosentile = get_provider(Vendors.ESRI_IMAGERY)
+
     neon_site=Preload.neon_sites[-1]
     curdoc().add_root(Tabs(tabs=[
         simple_tseries(neon_sites_pft,neon_site),
