@@ -1,5 +1,5 @@
 .ipynb_checkpoints
-.git/
 build/
 neon_dashboard/__pycache__/
 .venv
+.vscode/

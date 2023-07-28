@@ -53,6 +53,7 @@ import pandas as pd
 import xarray as xr
 import yaml
 
+
 from data_utils import *
 
 
@@ -75,15 +76,7 @@ def in_notebook():
         return False
 
 
-ShowWebpage = True
 
-if in_notebook():
-    ShowWebpage = False
-
-if ShowWebpage:
-    pass
-else:
-    output_notebook()
 
 # ----------------------------------
 # -- Tooltips for our plots
@@ -121,6 +114,7 @@ p_TOOLTIP = (
 
 COL_TPL = "<%= get_icon(type.toLowerCase()) %> <%= type %>"
 # ----------------------------------
+
 
 # ----------------- #
 # -- default values
@@ -201,6 +195,7 @@ vars_dict = {
     "ELAI": "Effective Leaf Area Index",
 }
 
+
 vars_dict2 = {y: x for x, y in vars_dict.items()}
 
 
@@ -235,7 +230,8 @@ neon_sites_pft["map_lat"] = y_trasnform
 neon_sites_pft["map_lon"] = x_transform
 
 
-def simple_tseries():
+def simple_tseries(neon_sites_pft,neon_site):
+
     df_new = get_data(df_all, default_var, default_freq, default_site)
     source = ColumnDataSource(df_new)
 
@@ -409,6 +405,7 @@ def simple_tseries():
 
     q_width = 350
     q_height = 350
+
     q = figure(
         tools=q_tools,
         width=q_width,
@@ -572,9 +569,7 @@ valid_vars = plot_vars
 
 
 # --------------------------- #
-
-
-def diel_doc():
+def diel_doc(neon_sites_pft):
     """
     Creates and returns a Bokeh Panel containing the Diel Cycle tab.
 
@@ -1218,21 +1213,35 @@ def diel_doc():
     return tab
 
 
-# output_notebook()
+if __name__.startswith('bokeh'):
+    print("!!!! main.py START...")
 
-# if ShowWebpage:
-#    simple_tseries(curdoc())
-# else:
-#    #show(bkapp)
-#    #show(simple_tseries)
+    from .preload import Preload
+
+    neon_sites     = Preload.neon_sites
+    neon_sites_pft = Preload.neon_sites_pft
+    df_all         = Preload.df_all
+    us_lon1, us_lat1, us_lon2, us_lat2=Preload.us_lon1, Preload.us_lat1, Preload.us_lon2, Preload.us_lat2
+
+    # getting 403 (permission denied on WIKIMEDIA)
+    #from bokeh.tile_providers import WIKIMEDIA, get_provider
+    #chosentile = get_provider(WIKIMEDIA)
+
+    neon_site=Preload.neon_sites[-1]
 
 
-tab_1 = simple_tseries()
-tab_2 = diel_doc()
+    tab_1 = simple_tseries(neon_sites_pft,neon_site)
+    tab_2 = diel_doc(neon_sites_pft)
 
-tabs = Tabs(tabs=[tab_1, tab_2])
-# doc.add_root(tabs)
+    tabs = Tabs(tabs=[tab_1, tab_2])
+    # doc.add_root(tabs)
 
-curdoc().add_root(tabs)
+    curdoc().add_root(tabs)
+    
+  # if ShowWebpage:
+  #    simple_tseries(curdoc())
+  # else:
+  #    #show(bkapp)
+  #    #show(simple_tseries)
 
-# make_doc(doc)
+
