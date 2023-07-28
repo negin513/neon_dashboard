@@ -1,8 +1,4 @@
 .ipynb_checkpoints
-~*
-.git/
-.DS_Store
 build/
-.vs/
 neon_dashboard/__pycache__/
 .venv

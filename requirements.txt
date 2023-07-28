@@ -12,4 +12,5 @@ pyproj
 xarray==2022.6.0
 ipython==8.5.0
 ipython-genutils==0.2.0
-
+dask
+distributed
