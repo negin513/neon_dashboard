@@ -43,7 +43,9 @@ class NeonSite:
         self.state = state
         self.add_xy_transform()
 
-    def add_xy_transform(self, inProj=Proj(init='epsg:3857'), outProj=Proj(init='epsg:4326')):
+    def add_xy_transform(
+        self, inProj=Proj(init="epsg:3857"), outProj=Proj(init="epsg:4326")
+    ):
         """
         Adds the transformed latitude and longitude coordinates to the NeonSite instance.
 
@@ -52,6 +54,7 @@ class NeonSite:
             outProj (pyproj.Proj, optional): The output projection. Defaults to EPSG:4326.
         """
         self.map_lon, self.map_lat = transform(outProj, inProj, self.lon, self.lat)
+
 
 def generate_sites(file_path):
     """
@@ -68,12 +71,15 @@ def generate_sites(file_path):
     all_sites = {}
 
     for _, row in neon_sites_pft.iterrows():
-        site = NeonSite(row['Site'], row['site_name'], row['Lat'], row['Lon'], row['state'])
-        all_sites[row['Site']] = site
+        site = NeonSite(
+            row["Site"], row["site_name"], row["Lat"], row["Lon"], row["state"]
+        )
+        all_sites[row["Site"]] = site
 
-    print(f'Total number of NEON sites for this demo: {len(neon_sites_pft)}')
+    print(f"Total number of NEON sites for this demo: {len(neon_sites_pft)}")
 
     return all_sites, neon_sites_pft
+
 
 def get_preprocessed_files(csv_dir, neon_site):
     """
@@ -86,8 +92,9 @@ def get_preprocessed_files(csv_dir, neon_site):
     Returns:
         fnames (list): List of preprocessed file names.
     """
-    fnames = glob.glob(os.path.join(csv_dir, f'preprocessed_{neon_site}_*.csv'))
+    fnames = glob.glob(os.path.join(csv_dir, f"preprocessed_{neon_site}_*.csv"))
     return fnames
+
 
 def load_and_preprocess_data(neon_sites, csv_dir):
     """
@@ -108,7 +115,7 @@ def load_and_preprocess_data(neon_sites, csv_dir):
     for neon_site in neon_sites:
         try:
             csv_file = f"preprocessed_{neon_site}_2021.csv"
-            df = dd.read_csv(os.path.join(csv_dir, csv_file),parse_dates=['time'])
+            df = dd.read_csv(os.path.join(csv_dir, csv_file), parse_dates=["time"])
             df_list.append(df)
         except Exception as e:
             print(f"Error loading data for site {neon_site}: {str(e)}")
@@ -119,21 +126,24 @@ def load_and_preprocess_data(neon_sites, csv_dir):
     print("Reading all preprocessed files took:", end_site - start_site, "s.")
 
     # Fix time formatting
-    #df_all['time'] = pd.to_datetime(df_all['time'], errors='coerce')
+    # df_all['time'] = pd.to_datetime(df_all['time'], errors='coerce')
 
     # Extract year, month, day, hour information from time
-    df_all['year'] = df_all['time'].dt.year
-    df_all['month'] = df_all['time'].dt.month
-    df_all['day'] = df_all['time'].dt.day
-    df_all['hour'] = df_all['time'].dt.hour
-    df_all['season'] = ((df_all['month'] % 12 + 3) // 3).map({1: 'DJF', 2: 'MAM', 3: 'JJA', 4: 'SON'})
+    df_all["year"] = df_all["time"].dt.year
+    df_all["month"] = df_all["time"].dt.month
+    df_all["day"] = df_all["time"].dt.day
+    df_all["hour"] = df_all["time"].dt.hour
+    df_all["season"] = ((df_all["month"] % 12 + 3) // 3).map(
+        {1: "DJF", 2: "MAM", 3: "JJA", 4: "SON"}
+    )
 
-    df_all['ELAI'] = np.nan
+    df_all["ELAI"] = np.nan
 
     print("Number of failed sites:", len(failed_sites))
     print(*failed_sites, sep=" \n")
 
     return df_all, failed_sites
+
 
 def get_data(df_all, var, freq, this_site):
     """
@@ -150,29 +160,31 @@ def get_data(df_all, var, freq, this_site):
     """
     start_time = time.time()
 
-    print('this_site', this_site)
-    df = df_all[df_all['site'] == this_site].compute()
+    print("this_site", this_site)
+    df = df_all[df_all["site"] == this_site]  # .compute()
     sim_var_name = "sim_" + var
 
     if freq == "monthly":
-        df = df.groupby(['year', 'month']).mean().reset_index()#.compute()
+        df = df.groupby(["year", "month"]).mean().reset_index()  # .compute()
         df["day"] = 15
-        df['time'] = dd.to_datetime(df[["year", "month", "day"]])
+        df["time"] = dd.to_datetime(df[["year", "month", "day"]])
 
     elif freq == "daily":
-        df = df.groupby(['year', 'month', 'day']).mean().reset_index()#.compute()
-        df['time'] = dd.to_datetime(df[["year", "month", "day"]])
-        
+        df = df.groupby(["year", "month", "day"]).mean().reset_index()  # .compute()
+        df["time"] = dd.to_datetime(df[["year", "month", "day"]])
 
     elif freq == "hourly":
-        df = df.groupby(['year', 'month', 'day', 'hour']).mean().reset_index()#.compute()
-        df['time'] = dd.to_datetime(df[["year", "month", "day", "hour"]])
+        df = (
+            df.groupby(["year", "month", "day", "hour"]).mean().reset_index()
+        )  # .compute()
+        df["time"] = dd.to_datetime(df[["year", "month", "day", "hour"]])
 
     elif freq == "all":
-        df = df#.compute()
+        df = df  # .compute()
 
-
-    df_new = pd.DataFrame({'time': df['time'], 'NEON': df[var], 'CLM': df[sim_var_name]})
+    df_new = pd.DataFrame(
+        {"time": df["time"], "NEON": df[var], "CLM": df[sim_var_name]}
+    )
 
     end_time = time.time()
     print("Computing all data took:", end_time - start_time, "s.")
@@ -194,20 +206,18 @@ def get_diel_data(df, var, season, this_site):
     """
 
     # Print site information
-    print(f'This site: {this_site}')
-    
-    #-- Filter DataFrame by season if it's not "Annual"
+    print(f"This site: {this_site}")
+
+    # -- Filter DataFrame by season if it's not "Annual"
     if season != "Annual":
-        df = df[df['season'] == season]
-            
-    #-- Filter DataFrame by site
-    df = df[df['site'] == this_site].compute()
-    
+        df = df[df["season"] == season]
+
+    # -- Filter DataFrame by site
+    df = df[df["site"] == this_site]#.compute()
 
     # Group the DataFrame by 'local_hour' and calculate the mean and standard deviation
-    diel_df_mean = df.groupby('local_hour').mean().reset_index()
-    diel_df_std = df.groupby('local_hour').std().reset_index()
-
+    diel_df_mean = df.groupby("local_hour").mean().reset_index()
+    diel_df_std = df.groupby("local_hour").std().reset_index()
 
     # Variable names for simulation, bias and standard deviation
     sim_var_name = "sim_" + var
@@ -218,28 +228,29 @@ def get_diel_data(df, var, season, this_site):
     diel_df_mean[bias_var_name] = diel_df_mean[sim_var_name] - diel_df_mean[var]
 
     # Create a new DataFrame with the calculated mean values
-    df_new = pd.DataFrame({
-        'hour': diel_df_mean['local_hour'],
-        'NEON': diel_df_mean[var],
-        'CLM': diel_df_mean[sim_var_name]
-    })
-    
+    df_new = pd.DataFrame(
+        {
+            "hour": diel_df_mean["local_hour"],
+            "NEON": diel_df_mean[var],
+            "CLM": diel_df_mean[sim_var_name],
+        }
+    )
+
     # Convert 'hour' to datetime format
-    df_new['local_hour_dt'] = pd.to_datetime(df_new['hour'], format='%H')
+    df_new["local_hour_dt"] = pd.to_datetime(df_new["hour"], format="%H")
 
     # Calculate bias for the new DataFrame
-    df_new['Bias'] = diel_df_mean[sim_var_name] - diel_df_mean[var]
+    df_new["Bias"] = diel_df_mean[sim_var_name] - diel_df_mean[var]
 
     # Calculate the lower and upper bounds for 'NEON'
-    df_new['NEON_lower'] = diel_df_mean[var] - diel_df_std[var]
-    df_new['NEON_upper'] = diel_df_mean[var] + diel_df_std[var]
+    df_new["NEON_lower"] = diel_df_mean[var] - diel_df_std[var]
+    df_new["NEON_upper"] = diel_df_mean[var] + diel_df_std[var]
 
     # Calculate the lower and upper bounds for 'CLM'
-    df_new['CLM_lower'] = diel_df_mean[sim_var_name] - diel_df_std[sim_var_name]
-    df_new['CLM_upper'] = diel_df_mean[sim_var_name] + diel_df_std[sim_var_name]
+    df_new["CLM_lower"] = diel_df_mean[sim_var_name] - diel_df_std[sim_var_name]
+    df_new["CLM_upper"] = diel_df_mean[sim_var_name] + diel_df_std[sim_var_name]
 
     return df_new
-
 
 
 def find_regline(df, var, sim_var_name):
@@ -260,6 +271,7 @@ def find_regline(df, var, sim_var_name):
     result = stats.linregress(df_temp[var], df_temp[sim_var_name])
     return result
 
+
 def fit_func(df):
     """
     This function fits a linear regression model on the 'NEON' and 'CLM' columns of the DataFrame.
@@ -271,15 +283,15 @@ def fit_func(df):
     x_fit (Series): The sorted 'NEON' values.
     y_fit (Series): The predicted 'CLM' values using the linear regression model.
     """
-    
+
     # Subset DataFrame
-    df_subset = df[['NEON', 'CLM']]
-    
+    df_subset = df[["NEON", "CLM"]]
+
     # Perform linear regression
-    slope, intercept, _, _, _ = stats.linregress(df_subset['NEON'], df_subset['CLM'])
+    slope, intercept, _, _, _ = stats.linregress(df_subset["NEON"], df_subset["CLM"])
 
     # Sort 'NEON' values
-    neon_sorted = df_subset['NEON'].sort_values()
+    neon_sorted = df_subset["NEON"].sort_values()
 
     # Compute min and max 'NEON' values with adjustments
     min_neon = df_subset.min().min() - neon_sorted.mean()
@@ -305,5 +317,5 @@ def get_neon_site(neon_sites_pft, site_name):
     Returns:
         this_site (pd.DataFrame): NEON site information for the specified site name.
     """
-    this_site = neon_sites_pft[neon_sites_pft['Site'] == site_name]
+    this_site = neon_sites_pft[neon_sites_pft["Site"] == site_name]
     return this_site
