@@ -171,11 +171,76 @@ def get_data(df_all, var, freq, this_site):
     elif freq == "all":
         df = df#.compute()
 
+
     df_new = pd.DataFrame({'time': df['time'], 'NEON': df[var], 'CLM': df[sim_var_name]})
 
     end_time = time.time()
     print("Computing all data took:", end_time - start_time, "s.")
     return df_new
+
+
+def get_diel_data(df, var, season, this_site):
+    """
+    This function gets and manipulates data related to diel cycles.
+
+    Parameters:
+    df (DataFrame): The original DataFrame to work on.
+    var (str): The variable of interest.
+    season (str): The season of interest, can be "Annual".
+    this_site (str): The site of interest.
+
+    Returns:
+    df_new (DataFrame): The manipulated DataFrame ready for output.
+    """
+
+    # Print site information
+    print(f'This site: {this_site}')
+    
+    #-- Filter DataFrame by season if it's not "Annual"
+    if season != "Annual":
+        df = df[df['season'] == season]
+            
+    #-- Filter DataFrame by site
+    df = df[df['site'] == this_site].compute()
+    
+
+    # Group the DataFrame by 'local_hour' and calculate the mean and standard deviation
+    diel_df_mean = df.groupby('local_hour').mean().reset_index()
+    diel_df_std = df.groupby('local_hour').std().reset_index()
+
+
+    # Variable names for simulation, bias and standard deviation
+    sim_var_name = "sim_" + var
+    bias_var_name = "bias_" + var
+    std_var_name = "std_" + var
+
+    # Calculate bias for each local hour
+    diel_df_mean[bias_var_name] = diel_df_mean[sim_var_name] - diel_df_mean[var]
+
+    # Create a new DataFrame with the calculated mean values
+    df_new = pd.DataFrame({
+        'hour': diel_df_mean['local_hour'],
+        'NEON': diel_df_mean[var],
+        'CLM': diel_df_mean[sim_var_name]
+    })
+    
+    # Convert 'hour' to datetime format
+    df_new['local_hour_dt'] = pd.to_datetime(df_new['hour'], format='%H')
+
+    # Calculate bias for the new DataFrame
+    df_new['Bias'] = diel_df_mean[sim_var_name] - diel_df_mean[var]
+
+    # Calculate the lower and upper bounds for 'NEON'
+    df_new['NEON_lower'] = diel_df_mean[var] - diel_df_std[var]
+    df_new['NEON_upper'] = diel_df_mean[var] + diel_df_std[var]
+
+    # Calculate the lower and upper bounds for 'CLM'
+    df_new['CLM_lower'] = diel_df_mean[sim_var_name] - diel_df_std[sim_var_name]
+    df_new['CLM_upper'] = diel_df_mean[sim_var_name] + diel_df_std[sim_var_name]
+
+    return df_new
+
+
 
 def find_regline(df, var, sim_var_name):
     """
@@ -194,6 +259,40 @@ def find_regline(df, var, sim_var_name):
 
     result = stats.linregress(df_temp[var], df_temp[sim_var_name])
     return result
+
+def fit_func(df):
+    """
+    This function fits a linear regression model on the 'NEON' and 'CLM' columns of the DataFrame.
+
+    Parameters:
+    df (DataFrame): The DataFrame on which to perform linear regression.
+
+    Returns:
+    x_fit (Series): The sorted 'NEON' values.
+    y_fit (Series): The predicted 'CLM' values using the linear regression model.
+    """
+    
+    # Subset DataFrame
+    df_subset = df[['NEON', 'CLM']]
+    
+    # Perform linear regression
+    slope, intercept, _, _, _ = stats.linregress(df_subset['NEON'], df_subset['CLM'])
+
+    # Sort 'NEON' values
+    neon_sorted = df_subset['NEON'].sort_values()
+
+    # Compute min and max 'NEON' values with adjustments
+    min_neon = df_subset.min().min() - neon_sorted.mean()
+    max_neon = df_subset.max().max() + 1.5 * neon_sorted.mean()
+
+    # Generate 'NEON' values in the computed range
+    x_fit = np.arange(min_neon, max_neon)
+
+    # Calculate 'CLM' predictions using the linear regression model
+    y_fit = slope * x_fit + intercept
+
+    return x_fit, y_fit
+
 
 def get_neon_site(neon_sites_pft, site_name):
     """

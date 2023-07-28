@@ -35,6 +35,14 @@ import yaml
 
 from data_utils import *
 
+
+# ----------------------------------
+# -- start a dask cluster
+#from dask.distributed import Client
+
+#client = Client(n_workers=2)
+#client
+
 # ----------------------------------
 # -- only for running in the notebook:
 def in_notebook():
@@ -100,7 +108,7 @@ COL_TPL = "<%= get_icon(type.toLowerCase()) %> <%= type %>"
 default_site = 'ABBY'
 default_freq = 'daily'
 default_var = 'EFLX_LH_TOT'
-
+default_season = 'Annual'
 
 # ----------------------------------
 # -- Functions and objects for this code
@@ -168,10 +176,7 @@ x_transform, y_trasnform = transform(outProj,inProj,x,y)
 neon_sites_pft ['map_lat'] = y_trasnform
 neon_sites_pft ['map_lon'] = x_transform
 
-from dask.distributed import Client
 
-client = Client(n_workers=4)
-client
 
 def simple_tseries():
 
@@ -446,89 +451,26 @@ plot_vars =['FSH','EFLX_LH_TOT','Rnet','NEE','GPP']
 valid_vars = plot_vars
 
 
-def get_diel_data (df, var, season, this_site):
-
-    print ('this site:', this_site)
-    if (season != "Annual"):
-        df = df[df['season']==season]
-        
-    print (df)
-    df_this = df[df['site']==this_site]
-    print (df_this)
-    # -- no outlier filtering required anymore : 
-    df = df_this
-
-    diel_df_mean = df.groupby('local_hour').mean().reset_index()
-    diel_df_std = df.groupby('local_hour').std().reset_index()
-
-    print (diel_df_mean)
-
-    sim_var_name = "sim_"+var
-    bias_var_name = "bias_"+var
-    std_var_name = "std_"+var
-
-    diel_df_mean[bias_var_name] = diel_df_mean[sim_var_name]-diel_df_mean[var]
-
-    df_new = pd.DataFrame({'hour':diel_df_mean['local_hour'],'NEON':diel_df_mean[var],'CLM':diel_df_mean[sim_var_name]})
-    
-    df_new['local_hour_dt']= pd.to_datetime(df_new['hour'], format='%H')
-
-   # df_new ['CLM'][-1] = diel_df_mean[sim_var_name][0]
-
-    df_new['Bias'] = diel_df_mean[sim_var_name] - diel_df_mean[var]
-    df_new['NEON_lower'] = diel_df_mean[var]-diel_df_std[var]
-    df_new['NEON_upper'] = diel_df_mean[var]+diel_df_std[var]
-
-    df_new['CLM_lower'] = diel_df_mean[sim_var_name]-diel_df_std[sim_var_name]
-    df_new['CLM_upper'] = diel_df_mean[sim_var_name]+diel_df_std[sim_var_name]
-
-    return df_new
 
 
-
-def fit_func(df):
-    df_temp = df[['NEON', 'CLM']]
-    print ('df_temp:')
-    print (df_temp)
-    print ('------------')
-    print ('------------')
-    print ('------------')
-    print ('------------')
-    print ('------------')
-    print ('------------')
-    slope, intercept, r_value, p_value, std_err = stats.linregress(df_temp['NEON'], df_temp['CLM'])
-
-    x_fit = df_temp['NEON'].sort_values()
-
-    min_x_fit = df_temp.min().min() - x_fit.mean()
-    max_x_fit = df_temp.max().max() + 1.5*x_fit.mean()
-    print ('max_x_fit',max_x_fit)
-    print ('min_x_fit',min_x_fit)
-
-    x_fit = np.arange(min_x_fit, max_x_fit)
-    y_fit = slope*x_fit +intercept
-    print ('======')
-    print (y_fit)
-    return x_fit, y_fit
-
+# --------------------------- # 
 
 def diel_doc():
-    #-- default values:
+    """
+    Creates and returns a Bokeh Panel containing the Diel Cycle tab.
 
-    default_site = 'ABBY'
-    default_season = 'Annual'
-    default_var = 'EFLX_LH_TOT'
+    Returns:
+        bokeh.models.Panel: The Diel Cycle tab panel.
+    """
 
     df_new = get_diel_data (df_all, default_var,default_season, default_site)
     source = ColumnDataSource(df_new)
 
+    this_site = get_neon_site(neon_sites_pft, default_site)
+    source2 = ColumnDataSource(this_site)
+
     x_fit, y_fit = fit_func(df_new)
     source_fit =  ColumnDataSource(data={'x': x_fit, 'y': y_fit})
-
-    this_site = get_neon_site(neon_sites_pft, default_site)
-    print (this_site)
-
-    source2 = ColumnDataSource(this_site)
 
     #-- what are tools options
     #tools = "hover, box_zoom, undo, crosshair"
@@ -714,58 +656,7 @@ def diel_doc():
         #regression_line = Slope(gradient=slope, y_intercept=intercept, line_color="red")
         #q.add_layout(regression_line)
         q.line('x', 'y', source=source_fit, alpha=0.8, color="navy",line_width=3)
-
-
-    p_width = 950
-    p_height = 450
-    p = figure(tools=p_tools, active_drag="xbox_select",
-               width = p_width, height = p_height, toolbar_location="right", x_axis_type="datetime")
-    diel_shaded_plot(p)
-
-    q_width = 950
-    q_height = 275
-    q = figure(tools=p_tools,width=q_width,
-               height=q_height, x_range=p.x_range, active_drag="xbox_select", toolbar_location="right", x_axis_type="datetime",
-               margin = (-30, 0, 0, 0))
-    diel_bias_plot(q)
-
-
-    q.add_tools(
-        HoverTool(
-            tooltips=[
-                      ("Hour", "$index"+":00"),
-                      ("Bias", "@Bias")]
-        )
-    )
-    p.add_tools(
-        HoverTool(
-            tooltips=[
-                      ("Hour", "$index"),
-                      ("NEON", "@NEON"),
-                      ("CLM", "@CLM"),
-                      ("Bias", "@Bias"),
-
-                      ]
-        )
-    )
-
-    q_width = 375
-    q_height = 375
-    qq = figure(tools=q_tools,width=q_width, height=q_width,
-             toolbar_location="right",toolbar_sticky=False,
-             active_drag="box_select",
-             x_range=p.y_range,y_range=p.y_range,
-             margin = (17, 0, 0, 0))
-    scatter_plot(qq)
-
-    qq.add_tools(
-        HoverTool(
-            tooltips=[
-                      ("NEON", "$x"),
-                      ("CLM", "$y")]
-        )
-    )
-
+    
     def map_site(w):
         w.circle(x="map_lon", y="map_lat", size=10, fill_color="dimgray", line_color="darkslategray",
                  fill_alpha=0.7, source=neon_sites_pft)
@@ -776,8 +667,33 @@ def diel_doc():
         w.yaxis.major_label_text_color = 'white'
         w.grid.visible = False
 
+    p_width = 950
+    p_height = 450
+
+    q_width = 950
+    q_height = 275
+
+    qq_width = 375
+    qq_height = 375
+
     w_width = 375
     w_height = 275
+
+    p = figure(tools=p_tools, active_drag="xbox_select",
+               width = p_width, height = p_height, toolbar_location="right", x_axis_type="datetime")
+    diel_shaded_plot(p)
+
+    q = figure(tools=p_tools,width=q_width,
+               height=q_height, x_range=p.x_range, active_drag="xbox_select", toolbar_location="right", x_axis_type="datetime",
+               margin = (-30, 0, 0, 0))
+    diel_bias_plot(q)
+
+    qq = figure(tools=q_tools,width=qq_width, height=qq_width,
+             toolbar_location="right",toolbar_sticky=False,
+             active_drag="box_select",
+             x_range=p.y_range,y_range=p.y_range,
+             margin = (17, 0, 0, 0))
+    scatter_plot(qq)
 
     w = figure (
            name = "neon_map",
@@ -791,12 +707,40 @@ def diel_doc():
            tools=['wheel_zoom', "pan"],toolbar_location='right')
     map_site(w)
 
+    p.add_tools(
+        HoverTool(
+            tooltips=[
+                      ("Hour", "$index"),
+                      ("NEON", "@NEON"),
+                      ("CLM", "@CLM"),
+                      ("Bias", "@Bias"),
+
+                      ]
+        )
+    )
+
+    q.add_tools(
+        HoverTool(
+            tooltips=[
+                      ("Hour", "$index"+":00"),
+                      ("Bias", "@Bias")]
+        )
+    )
+
+    qq.add_tools(
+        HoverTool(
+            tooltips=[
+                      ("NEON", "$x"),
+                      ("CLM", "$y")]
+        )
+    )
+
     pd.set_option('display.float_format', lambda x: '%.3f' % x)
     
     stat_summary = df_new[['NEON','CLM']].describe().applymap(lambda x: f"{x:0.3f}")
     source3 = ColumnDataSource(stat_summary)
+
     #title = 'Statistical Summary'
-    #line  = '-------------------'
     #print (stat_summary)
     #stats_text = title +  '\n'+str(stat_summary)
 
@@ -809,6 +753,7 @@ def diel_doc():
         TableColumn(field='NEON', title='NEON', width=75),
         TableColumn(field='CLM', title='CTSM' , width=75),
         ]
+        
     myTable = DataTable(source=source3, columns=columns,
                          index_position = None, fit_columns= False, width = 350, margin = (0, 0, 0, 10))
 
@@ -821,6 +766,7 @@ def diel_doc():
     button = Button(label="Download", css_classes=['btn_style'], width = 300)
     button.js_on_event("button_click", CustomJS(args=dict(source=source),
                     code=open(os.path.join('.', "download.js")).read()))
+
 
     def update_stats(df_new):
 
@@ -924,7 +870,7 @@ def diel_doc():
         elif (new_var=='ELAI'):
             p.yaxis.axis_label = 'Exposed Leaf Area Index'
 
-
+    # -----------------------------
     # --variable
     menu.on_change('value', update_variable)
     menu.on_change('value', update_yaxis)
@@ -940,10 +886,8 @@ def diel_doc():
     menu.on_change('value', update_yaxis)
     menu_site.on_change('value', update_title)
 
-    ###layout = row(column(menu, menu_freq, menu_site, q),  p)
-    #layout = row(column(p,q), column( menu, menu_season, menu_site,qq), stats)
+    # -- create a layout
     layout = column(row( menu, menu_season, menu_site), row(column (p, q), column (qq, w), column(title, myTable, button)))
-    #row(column(p,q), , stats)
 
     #doc.add_root(layout)
     tab = Panel(child = layout, title = 'Diurnal Cycle')
@@ -966,7 +910,8 @@ def diel_doc():
 
 tab_1 = simple_tseries()
 tab_2 = diel_doc()
-tabs=Tabs(tabs=[tab_1])
+
+tabs=Tabs(tabs=[tab_1, tab_2])
 #doc.add_root(tabs)
 
 curdoc().add_root(tabs)
