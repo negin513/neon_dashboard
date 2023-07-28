@@ -1059,7 +1059,7 @@ def diel_doc(neon_sites_pft):
     button.js_on_event(
         "button_click",
         CustomJS(
-            args=dict(source=source), code=open(os.path.join(".", "download.js")).read()
+            args=dict(source=source), code=open(os.path.join(os.path.dirname(__file__),"models", "download.js")).read()
         ),
     )
 
