@@ -2,3 +2,4 @@
 build/
 neon_dashboard/__pycache__/
 .venv
+.vscode/
