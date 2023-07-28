@@ -31,7 +31,7 @@ class Preload:
         print ('Total number of NEON sites for this demo:', len(Preload.neon_sites))
 
         failed_sites = []
-        csv_dir = "neon_dashboard/data/"
+        csv_dir = "data/preprocessed_data/"
         df_list =[]
         start_site = time.time()
         
