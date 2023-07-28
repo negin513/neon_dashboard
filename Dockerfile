@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5006
 
 # Set the command to run your Bokeh application
-CMD ["bokeh", "serve", "--allow-websocket-origin=127.0.0.1:5006", "neon_dashboard"]
+CMD ["bokeh", "serve", "--address=0.0.0.0", "--allow-websocket-origin", "negin-neon-test.k8s.ucar.edu", "neon_dashboard"]
