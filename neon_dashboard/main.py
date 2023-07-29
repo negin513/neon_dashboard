@@ -201,36 +201,9 @@ vars_dict2 = {y: x for x, y in vars_dict.items()}
 
 all_sites, neon_sites_pft = generate_sites(neon_sites_file)
 
-start_time = time.time()
-df_all, failed_sites = load_and_preprocess_data(neon_sites, csv_dir)
-elapsed_time = time.time() - start_time
-
-print(f"Reading all preprocessed files took: {elapsed_time:.2f} seconds.")
-print(f"Number of failed sites: {len(failed_sites)}")
-print("\n".join(failed_sites))
-
-
 # -- time-series with Dropdown menu for variables
 
-# make a simple plot time-series
-inProj = Proj(init="epsg:3857")
-outProj = Proj(init="epsg:4326")
-
-world_lon1, world_lat1 = transform(outProj, inProj, -130, 0)
-world_lon2, world_lat2 = transform(outProj, inProj, -60, 60)
-
-us_lon1, us_lat1 = transform(outProj, inProj, -130, 23)
-us_lon2, us_lat2 = transform(outProj, inProj, -65, 49)
-
-
-x = neon_sites_pft["Lon"]
-y = neon_sites_pft["Lat"]
-x_transform, y_trasnform = transform(outProj, inProj, x, y)
-neon_sites_pft["map_lat"] = y_trasnform
-neon_sites_pft["map_lon"] = x_transform
-
-
-def simple_tseries(neon_sites_pft,neon_site):
+def simple_tseries(df_all, neon_sites_pft,neon_site):
 
     df_new = get_data(df_all, default_var, default_freq, default_site)
     source = ColumnDataSource(df_new)
@@ -569,7 +542,7 @@ valid_vars = plot_vars
 
 
 # --------------------------- #
-def diel_doc(neon_sites_pft):
+def diel_doc(df_all, neon_sites_pft):
     """
     Creates and returns a Bokeh Panel containing the Diel Cycle tab.
 
@@ -1214,7 +1187,8 @@ def diel_doc(neon_sites_pft):
 
 
 if __name__.startswith('bokeh'):
-    print("!!!! main.py START...")
+    print ( " -----------------------------  ")
+    print ( " Starting bokeh application ... ")
 
     from .preload import Preload
 
@@ -1228,10 +1202,11 @@ if __name__.startswith('bokeh'):
     #chosentile = get_provider(WIKIMEDIA)
 
     neon_site=Preload.neon_sites[-1]
+    print ('~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+    print (neon_site)
 
-
-    tab_1 = simple_tseries(neon_sites_pft,neon_site)
-    tab_2 = diel_doc(neon_sites_pft)
+    tab_1 = simple_tseries(df_all, neon_sites_pft,neon_site)
+    tab_2 = diel_doc(df_all, neon_sites_pft)
 
     tabs = Tabs(tabs=[tab_1, tab_2])
     # doc.add_root(tabs)
