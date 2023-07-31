@@ -5,6 +5,8 @@ from bokeh.tile_providers import get_provider, Vendors
 
 
 from data_utils import *
+from base_tab import *
+
 
 vars_dict = {
     "FSH": "Sensible Heat Flux ",
@@ -35,6 +37,10 @@ class SimpleTseries:
         default_var,
         default_freq,
         default_site,
+        us_lat1,
+        us_lat2,
+        us_lon1,
+        us_lon2,
     ):
         self.df_all = df_all
         self.neon_sites_pft = neon_sites_pft
@@ -42,6 +48,11 @@ class SimpleTseries:
         self.default_var = default_var
         self.default_freq = default_freq
         self.default_site = default_site
+        
+        self.us_lat1=us_lat1
+        self.us_lat2=us_lat2
+        self.us_lon1=us_lon1
+        self.us_lon2=us_lon2
 
         p_tools = (
             "pan, wheel_zoom, box_zoom, box_select, undo, redo, save, reset, crosshair"
@@ -182,6 +193,8 @@ class SimpleTseries:
         q.xaxis.major_label_orientation = np.pi / 4
 
     def map_sites(self, w):
+        from bokeh.tile_providers import get_provider, Vendors
+
         w.circle(
             x="map_lon",
             y="map_lat",
@@ -201,6 +214,9 @@ class SimpleTseries:
             source=self.source2,
         )
         chosentile = get_provider(Vendors.ESRI_IMAGERY)
+        print ('~~~~~~~~~')
+        print ('chosen tiles')
+        print ( chosentile)
         w.add_tile(chosentile)
         w.xaxis.major_label_text_color = "white"
         w.yaxis.major_label_text_color = "white"
@@ -309,8 +325,8 @@ class SimpleTseries:
             name="neon_map",
             plot_width=w_width,
             plot_height=w_height,
-            x_range=(-130, -65),  # Set appropriate range for x and y
-            y_range=(23, 49),
+            x_range=(self.us_lon1, self.us_lon2),
+            y_range=(self.us_lat1, self.us_lat2),
             x_axis_type="mercator",
             y_axis_type="mercator",
             x_axis_location=None,
@@ -319,6 +335,7 @@ class SimpleTseries:
             max_height=w_height,
             max_width=w_width,
             margin=(-17, 0, 0, 53),
+            tooltips=TOOLTIP,
             tools=["wheel_zoom", "pan"],
             toolbar_location="right",
         )
@@ -353,6 +370,8 @@ class SimpleTseries:
         menu_site.on_change("value", self.update_variable)
         menu_site.on_change("value", self.update_site)
 
+        #layout = column(p, w)
         layout = column(row(p, column(menu, menu_freq, menu_site, q)), w)
+
         tab = Panel(child=layout, title="Time Series")
         return tab
