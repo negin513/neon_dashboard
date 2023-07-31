@@ -8,23 +8,12 @@ from data_utils import *
 from base_tab import *
 
 
-vars_dict = {
-    "FSH": "Sensible Heat Flux ",
-    "EFLX_LH_TOT": "Latent Heat Flux ",
-    "Rnet": "Net Radiation ",
-    "GPP": "Gross Primary Production",
-    "NEE": "Net Ecosystem Exchange",
-    "ELAI": "Effective Leaf Area Index",
-}
-
-# -- reverse keys and values...
-rev_vars_dict = {y: x for x, y in vars_dict.items()}
 
 freq_list = ["all", "hourly", "daily", "monthly"]
 plot_vars = ["FSH", "EFLX_LH_TOT", "Rnet", "NEE", "GPP", "ELAI"]
 
 
-class SimpleTseries:
+class SimpleTseries(BaseTab):
     """
     Class for generating time series plots tabs.
     """
@@ -42,27 +31,29 @@ class SimpleTseries:
         us_lon1,
         us_lon2,
     ):
-        self.df_all = df_all
-        self.neon_sites_pft = neon_sites_pft
-        self.neon_sites = neon_sites
-        self.default_var = default_var
-        self.default_freq = default_freq
-        self.default_site = default_site
-        
-        self.us_lat1=us_lat1
-        self.us_lat2=us_lat2
-        self.us_lon1=us_lon1
-        self.us_lon2=us_lon2
+        super().__init__(
+            df_all,
+            neon_sites_pft,
+            neon_sites,
+            default_var,
+            default_freq,
+            default_site,
+            us_lat1,
+            us_lat2,
+            us_lon1,
+            us_lon2,
+        )
 
         p_tools = (
             "pan, wheel_zoom, box_zoom, box_select, undo, redo, save, reset, crosshair"
         )
-        q_tools = "pan,  box_zoom, box_select, lasso_select, crosshair"
+        q_tools = "pan, box_zoom, box_select, lasso_select, crosshair"
+
         self.load_data()
 
     def load_data(self):
         """
-        Function for creating ColumnDataSouces:
+        Function for creating ColumnDataSources.
         """
         df_new = get_data(
             self.df_all, self.default_var, self.default_freq, self.default_site
@@ -192,44 +183,17 @@ class SimpleTseries:
         # q.xaxis.major_label_orientation = "vertical"
         q.xaxis.major_label_orientation = np.pi / 4
 
-    def map_sites(self, w):
-        from bokeh.tile_providers import get_provider, Vendors
-
-        w.circle(
-            x="map_lon",
-            y="map_lat",
-            size=10,
-            fill_color="dimgray",
-            line_color="darkslategray",
-            fill_alpha=0.7,
-            source=self.neon_sites_pft,
-        )
-        w.circle(
-            x="map_lon",
-            y="map_lat",
-            size=10,
-            fill_color="darkorange",
-            line_color="darkorange",
-            fill_alpha=0.9,
-            source=self.source2,
-        )
-        chosentile = get_provider(Vendors.ESRI_IMAGERY)
-        print ('~~~~~~~~~')
-        print ('chosen tiles')
-        print ( chosentile)
-        w.add_tile(chosentile)
-        w.xaxis.major_label_text_color = "white"
-        w.yaxis.major_label_text_color = "white"
-        w.grid.visible = False
-
     def update_variable(self, attr, old, new):
-        print("updating plot for:")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("calling update_variable :")
         print(" - freq: ", self.menu_freq.value)
         print(" - site: ", self.menu_site.value)
-        new_var = rev_vars_dict[self.menu.value]
-        print(" - var: ", new_var)
+        print(" - var menu: ", self.menu.value)
+        #new_var = rev_vars_dict[self.menu.value]
+        print(" - var: ", rev_vars_dict[self.menu.value])
 
-        df_new = get_data(new_var, self.menu_freq.value, self.menu_site.value)
+        df_new = get_data(self.df_all, rev_vars_dict[self.menu.value], self.menu_freq.value, self.menu_site.value)
+        
         self.source.data = df_new
 
         this_site = get_neon_site(self.neon_sites_pft, self.menu_site.value)
@@ -247,11 +211,16 @@ class SimpleTseries:
         self.p.title.text = plot_title
 
     def update_site(self, attr, old, new):
-        new_var = rev_vars_dict[self.menu.value]
-        df_new = get_data(new_var, self.menu_freq.value, new)
+        print("~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("calling update_site :")
+        print(" - freq: ", self.menu_freq.value)
+        print(" - site: ", self.menu_site.value)
+        print(" - var menu: ", self.menu.value)
+        #new_var = rev_vars_dict[self.menu.value]
+        print(" - var: ", rev_vars_dict[self.menu.value])
+
         this_site = get_neon_site(self.neon_sites_pft, new)
 
-        self.source.data = df_new
         self.source2.data = this_site
 
         plot_title = (
@@ -265,29 +234,15 @@ class SimpleTseries:
         )
         self.p.title.text = plot_title
 
-    def update_yaxis(self, attr, old, new):
-        new_var = rev_vars_dict[self.menu.value]
-
-        if new_var == "EFLX_LH_TOT":
-            self.p.yaxis.axis_label = "Latent Heat Flux [W m⁻²]"
-        elif new_var == "FSH":
-            self.p.yaxis.axis_label = "Sensible Heat Flux [W m⁻²]"
-        elif new_var == "Rnet":
-            self.p.yaxis.axis_label = "Net Radiation [W m⁻²]"
-        elif new_var == "NEE":
-            self.p.yaxis.axis_label = "Net Ecosystem Exchange [gC m⁻² day⁻¹]"
-        elif new_var == "GPP":
-            self.p.yaxis.axis_label = "Gross Primary Production [gC m⁻² day⁻¹]"
-        elif new_var == "ELAI":
-            self.p.yaxis.axis_label = "Exposed Leaf Area Index"
-
     def create_tab(self):
+        
+        # -----------------------
         # -- adding time-series panel
         p_width = 1300
         p_height = 550
         neon_site = "ABBY"  # Default site for initial plot
 
-        p = figure(
+        self.p = figure(
             tools="pan, wheel_zoom, box_zoom, box_select, undo, redo, save, reset, crosshair",
             x_axis_type="datetime",
             title="Neon Time-Series " + neon_site,
@@ -295,33 +250,35 @@ class SimpleTseries:
             height=p_height,
         )
 
-        self.tseries_plot(p)
+        self.tseries_plot(self.p)
 
         hover = HoverTool(
             tooltips=[("Time", "@time{%F %T}"), ("NEON", "@NEON"), ("CLM", "@CLM")],
             formatters={"@time": "datetime"},
         )
-        p.add_tools(hover)
+        self.p.add_tools(hover)
 
+        # -----------------------
         # -- adding scatter panel
         q_width = 350
         q_height = 350
 
-        q = figure(
+        self.q = figure(
             tools="pan, box_zoom, box_select, lasso_select, crosshair",
             width=q_width,
             height=q_height,
-            x_range=p.y_range,
-            y_range=p.y_range,
+            x_range=self.p.y_range,
+            y_range=self.p.y_range,
             tooltips=[("NEON", "@NEON"), ("CLM", "@CLM")],
         )
-        self.scatter_plot(q)
+        self.scatter_plot(self.q)
 
+        # -----------------------
         # -- adding map panel
         w_width = 375
         w_height = 225
 
-        w = figure(
+        self.w = figure(
             name="neon_map",
             plot_width=w_width,
             plot_height=w_height,
@@ -340,38 +297,41 @@ class SimpleTseries:
             toolbar_location="right",
         )
 
-        self.map_sites(w)
+        self.map_sites(self.w)
 
+        # -----------------------
         # -- adding menu options
-        menu = Select(
+        self.menu = Select(
             options=list(rev_vars_dict.keys()),
-            value=self.default_var,
+            value=vars_dict[self.default_var],
             title="Variable",
             css_classes=["custom_select"],
         )
-        menu_freq = Select(
+        self.menu_freq = Select(
             options=freq_list,
             value=self.default_freq,
             title="Frequency",
         )
-        menu_site = Select(
+        self.menu_site = Select(
             options=self.neon_sites,
             value=self.default_site,
             title="Neon Site",
         )
 
+        # -----------------------------
         # adding menu behaviors:
 
-        menu.on_change("value", self.update_variable)
-        menu.on_change("value", self.update_yaxis)
+        self.menu.on_change("value", self.update_variable)
+        self.menu.on_change("value", self.update_yaxis)
 
-        menu_freq.on_change("value", self.update_variable)
+        self.menu_freq.on_change("value", self.update_variable)
 
-        menu_site.on_change("value", self.update_variable)
-        menu_site.on_change("value", self.update_site)
+        # -- menu site change :
+        self.menu_site.on_change("value", self.update_variable)
+        self.menu_site.on_change("value", self.update_site)
 
         #layout = column(p, w)
-        layout = column(row(p, column(menu, menu_freq, menu_site, q)), w)
+        layout = column(row(self.p, column(self.menu, self.menu_freq, self.menu_site, self.q)), self.w)
 
         tab = Panel(child=layout, title="Time Series")
         return tab

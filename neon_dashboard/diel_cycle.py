@@ -35,24 +35,17 @@ default_freq = "daily"
 default_var = "EFLX_LH_TOT"
 default_season = "Annual"
 
-plot_vars = ["FSH", "EFLX_LH_TOT", "Rnet", "NEE", "GPP"]
-valid_vars = plot_vars
 
-vars_dict = {
-    "FSH": "Sensible Heat Flux ",
-    "EFLX_LH_TOT": "Latent Heat Flux ",
-    "Rnet": "Net Radiation ",
-    "GPP": "Gross Primary Production",
-    "NEE": "Net Ecosystem Exchange",
-    "ELAI": "Effective Leaf Area Index",
-}
-
-# -- reverse keys and values...
-rev_vars_dict = {y: x for x, y in vars_dict.items()}
+# -- what are tools options
+# tools = "hover, box_zoom, undo, crosshair"
+p_tools = (
+    "pan, wheel_zoom, box_zoom,  undo, redo, save, reset, crosshair,xbox_select"
+)
+q_tools = "pan,  box_zoom, box_select, lasso_select, crosshair"
 
 
-class DielCycle:
-    
+
+class DielCycle(BaseTab):
     """
     Creates and returns a Bokeh Panel containing the Diel Cycle tab.
 
@@ -61,8 +54,8 @@ class DielCycle:
     """
     TOOLTIP = [("Hour", "$index"), ("NEON", "@NEON"), ("CLM", "@CLM"), ("Bias", "@Bias")]
 
-    P_TOOLS = "pan, wheel_zoom, box_zoom,  undo, redo, save, reset, crosshair,xbox_select"
-    Q_TOOLS = "pan,  box_zoom, box_select, lasso_select, crosshair"
+    P_TOOLS = "pan, wheel_zoom, box_zoom, undo, redo, save, reset, crosshair,xbox_select"
+    Q_TOOLS = "pan, box_zoom, box_select, lasso_select, crosshair"
 
     P_WIDTH = 950
     P_HEIGHT = 450
@@ -75,7 +68,7 @@ class DielCycle:
 
     W_WIDTH = 375
     W_HEIGHT = 275
-    
+
     def __init__(
         self,
         df_all,
@@ -89,17 +82,18 @@ class DielCycle:
         us_lon1,
         us_lon2,
     ):
-        self.df_all = df_all
-        self.neon_sites_pft = neon_sites_pft
-        self.neon_sites = neon_sites
-        self.default_var = default_var
-        self.default_freq = default_freq
-        self.default_site = default_site
-
-        self.us_lat1=us_lat1
-        self.us_lat2=us_lat2
-        self.us_lon1=us_lon1
-        self.us_lon2=us_lon2
+        super().__init__(
+            df_all,
+            neon_sites_pft,
+            neon_sites,
+            default_var,
+            default_freq,
+            default_site,
+            us_lat1,
+            us_lat2,
+            us_lon1,
+            us_lon2,
+        )
         self.load_data()
 
     def load_data(self):
@@ -429,42 +423,16 @@ class DielCycle:
         # q.add_layout(regression_line)
         q.line("x", "y", source=self.source_fit, alpha=0.8, color="navy", line_width=3)
         
-    def map_site(self,w):
-        w.circle(
-            x="map_lon",
-            y="map_lat",
-            size=10,
-            fill_color="dimgray",
-            line_color="darkslategray",
-            fill_alpha=0.7,
-            source=self.neon_sites_pft,
-        )
-        w.circle(
-            x="map_lon",
-            y="map_lat",
-            size=10,
-            fill_color="darkorange",
-            line_color="darkorange",
-            fill_alpha=0.9,
-            source=self.source2,
-        )
-        chosentile = get_provider(Vendors.ESRI_IMAGERY)
-        w.add_tile(chosentile)
-        w.xaxis.major_label_text_color = "white"
-        w.yaxis.major_label_text_color = "white"
-        w.grid.visible = False
-
-
     def update_variable(self,attr, old, new):
-        print("Updating variable")
-
-        print("updating plot for:")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("calling update_variable :")
         print(" - freq : ", self.menu_season.value)
         print(" - site : ", self.menu_site.value)
+        print(" - var menu: ", self.menu.value)
         new_var = rev_vars_dict[self.menu.value]
-        print(" - var  : ", new_var)
+        print(" - var: ", rev_vars_dict[self.menu.value])
 
-        df_new = get_diel_data(self.df_all, new_var, self.menu_season.value, self.menu_site.value)
+        df_new = get_diel_data(self.df_all, rev_vars_dict[self.menu.value], self.menu_season.value, self.menu_site.value)
         self.update_stats(df_new)
 
         self.source.data = df_new
@@ -549,22 +517,6 @@ class DielCycle:
             + " Average)"
         )
 
-    def update_yaxis(self,attr, old, new):
-        new_var = vars_dict[self.menu.value]
-
-        if new_var == "EFLX_LH_TOT":
-            p.yaxis.axis_label = "Latent Heat Flux [W m⁻²]"
-        elif new_var == "FSH":
-            p.yaxis.axis_label = "Sensible Heat Flux [W m⁻²]"
-        elif new_var == "Rnet":
-            p.yaxis.axis_label = "Net Radiation [W m⁻²]"
-        elif new_var == "NEE":
-            p.yaxis.axis_label = "Net Ecosystem Exchange [gC m⁻² day⁻¹]"
-        elif new_var == "GPP":
-            p.yaxis.axis_label = "Gross Primary Production [gC m⁻² day⁻¹]"
-        elif new_var == "ELAI":
-            p.yaxis.axis_label = "Exposed Leaf Area Index"
-            
     def update_stats(self,df_new):
         stat_summary = (
             df_new[["NEON", "CLM"]].describe().applymap(lambda x: f"{x:0.3f}")
@@ -578,22 +530,9 @@ class DielCycle:
         # source3.stream(df_new)
         print("done with stats")
 
-
     def create_tab(self):
-        # -- what are tools options
-        # tools = "hover, box_zoom, undo, crosshair"
-        p_tools = (
-            "pan, wheel_zoom, box_zoom,  undo, redo, save, reset, crosshair,xbox_select"
-        )
-        q_tools = "pan,  box_zoom, box_select, lasso_select, crosshair"
 
-        
-
-    
-
-
-        
-
+        # -- layout values...
         p_width = 950
         p_height = 450
 
@@ -606,7 +545,9 @@ class DielCycle:
         w_width = 375
         w_height = 275
 
-        p = figure(
+        # -----------------------
+        # -- adding shaded time-series panel
+        self.p = figure(
             tools=p_tools,
             active_drag="xbox_select",
             width=p_width,
@@ -614,34 +555,41 @@ class DielCycle:
             toolbar_location="right",
             x_axis_type="datetime",
         )
-        self.diel_shaded_plot(p)
+        self.diel_shaded_plot(self.p)
 
-        q = figure(
+        # -----------------------
+        # -- adding bias plot
+        self.q = figure(
             tools=p_tools,
             width=q_width,
             height=q_height,
-            x_range=p.x_range,
+            x_range=self.p.x_range,
             active_drag="xbox_select",
             toolbar_location="right",
             x_axis_type="datetime",
             margin=(-30, 0, 0, 0),
         )
-        self.diel_bias_plot(q)
+        self.diel_bias_plot(self.q)
 
-        qq = figure(
+        # -----------------------
+        # -- adding scatter plot
+
+        self.qq = figure(
             tools=q_tools,
             width=qq_width,
             height=qq_width,
             toolbar_location="right",
             toolbar_sticky=False,
             active_drag="box_select",
-            x_range=p.y_range,
-            y_range=p.y_range,
+            x_range=self.p.y_range,
+            y_range=self.p.y_range,
             margin=(17, 0, 0, 0),
         )
-        self.scatter_plot(qq)
+        self.scatter_plot(self.qq)
 
-        w = figure(
+        # -----------------------
+        # -- adding map panel
+        self.w = figure(
             name="neon_map",
             plot_width=w_width,
             plot_height=w_height,
@@ -658,9 +606,9 @@ class DielCycle:
             tools=["wheel_zoom", "pan"],
             toolbar_location="right",
         )
-        self.map_site(w)
+        self.map_sites(self.w)
 
-        p.add_tools(
+        self.p.add_tools(
             HoverTool(
                 tooltips=[
                     ("Hour", "$index"),
@@ -671,9 +619,9 @@ class DielCycle:
             )
         )
 
-        q.add_tools(HoverTool(tooltips=[("Hour", "$index" + ":00"), ("Bias", "@Bias")]))
+        self.q.add_tools(HoverTool(tooltips=[("Hour", "$index" + ":00"), ("Bias", "@Bias")]))
 
-        qq.add_tools(HoverTool(tooltips=[("NEON", "$x"), ("CLM", "$y")]))
+        self.qq.add_tools(HoverTool(tooltips=[("NEON", "$x"), ("CLM", "$y")]))
 
         pd.set_option("display.float_format", lambda x: "%.3f" % x)
 
@@ -707,9 +655,11 @@ class DielCycle:
             margin=(0, 0, 0, 10),
         )
 
+        # -----------------------
+        # -- adding menu options
         self.menu = Select(
-            options=list(vars_dict.keys()),
-            value=vars_dict[default_var],
+            options=list(rev_vars_dict.keys()),
+            value=vars_dict[self.default_var],
             title="Variable",
             css_classes=["custom_select"],
         )
@@ -727,6 +677,7 @@ class DielCycle:
                 args=dict(source=self.source), code=open(os.path.join(os.path.dirname(__file__),"models", "download.js")).read()
             ),
         )
+        
         # -----------------------------
         # --variable
         self.menu.on_change("value", self.update_variable)
@@ -746,7 +697,7 @@ class DielCycle:
         # -- create a layout
         layout = column(
             row(self.menu, self.menu_season, self.menu_site),
-            row(column(p, q), column(qq, w), column(title, myTable, button)),
+            row(column(self.p, self.q), column(self.qq, self.w), column(title, myTable, button)),
         )
 
         # doc.add_root(layout)
