@@ -32,9 +32,9 @@ class Preload:
                   'TEAK', 'TOOL', 'BARR', 'BONA',
                   'DEJU', 'HEAL']
 
-    csv_dir = "data/preprocessed_data"
+    csv_dir = os.path.join(os.path.dirname(__file__), "data/preprocessed_data")
     
-    neon_sites_file = "data/all_neon_sites.csv"
+    neon_sites_file = os.path.join(os.path.dirname(__file__),"data/all_neon_sites.csv")
 
 
     def __init__(self):
