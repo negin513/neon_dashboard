@@ -5,9 +5,21 @@ from bokeh.plotting import figure
 from bokeh.layouts import column, row
 from bokeh.models import ColumnDataSource, HoverTool, Select, Panel
 from bokeh.tile_providers import get_provider, Vendors
-from bokeh.models import (Band, Button, ColumnDataSource, CustomJS, DataTable, 
-                          Div, DatetimeTickFormatter, HoverTool, Label, 
-                          Panel, Select, Slope, TableColumn)
+from bokeh.models import (
+    Band,
+    Button,
+    ColumnDataSource,
+    CustomJS,
+    DataTable,
+    Div,
+    DatetimeTickFormatter,
+    HoverTool,
+    Label,
+    Panel,
+    Select,
+    Slope,
+    TableColumn,
+)
 
 from data_utils import *
 from base_tab import *

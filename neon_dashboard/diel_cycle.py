@@ -6,9 +6,21 @@ import numpy as np
 
 from bokeh import models, events
 from bokeh.layouts import column, row
-from bokeh.models import (Band, Button, ColumnDataSource, CustomJS, DataTable, 
-                          Div, DatetimeTickFormatter, HoverTool, Label, 
-                          Panel, Select, Slope, TableColumn)
+from bokeh.models import (
+    Band,
+    Button,
+    ColumnDataSource,
+    CustomJS,
+    DataTable,
+    Div,
+    DatetimeTickFormatter,
+    HoverTool,
+    Label,
+    Panel,
+    Select,
+    Slope,
+    TableColumn,
+)
 from bokeh.plotting import figure
 from bokeh.tile_providers import get_provider, Vendors
 
@@ -33,7 +45,6 @@ class DielCycle(BaseTab):
     Returns:
         bokeh.models.Panel: The Diel Cycle tab panel.
     """
-
 
     def __init__(
         self,
@@ -83,7 +94,7 @@ class DielCycle(BaseTab):
             us_lon2,
         )
         self.default_season = default_season
-        
+
         self.load_data()
 
     def load_data(self):
@@ -236,9 +247,13 @@ class DielCycle(BaseTab):
             + self.this_site["state"].values[0].replace(r"[][]", " ")
             + " ("
             + self.default_site
-            + ") " 
-            + " -- " + self.default_season + " "+ "Average") 
-    
+            + ") "
+            + " -- "
+            + self.default_season
+            + " "
+            + "Average"
+        )
+
         p.title.text = plot_title
 
         p.legend.location = "top_right"
@@ -308,7 +323,6 @@ class DielCycle(BaseTab):
         q.xaxis.formatter = DatetimeTickFormatter(days="%H:%M", hours="%H:%M")
         q.xaxis.major_label_orientation = np.pi / 4
         q.xaxis[0].ticker.desired_num_ticks = 12
-
 
     def update_variable(self, attr, old, new):
         print("~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -412,9 +426,13 @@ class DielCycle(BaseTab):
             + self.menu_site.value["state"].values[0].replace(r"[][]", " ")
             + " ("
             + self.menu_site.value
-            + ") " 
-            + " -- " + self.menu_season.value + " "+ "Average")
-        
+            + ") "
+            + " -- "
+            + self.menu_season.value
+            + " "
+            + "Average"
+        )
+
         self.p.title.text = plot_title
 
     def update_stats(self, df_new):
@@ -431,10 +449,9 @@ class DielCycle(BaseTab):
         print("done with stats")
 
     def create_tab(self):
-
         # -----------------------
         TOOLTIP = [
-            ("Hour", "$index"+ ":00"),
+            ("Hour", "$index" + ":00"),
             ("NEON", "@NEON"),
             ("CLM", "@CLM"),
             ("Bias", "@Bias"),
@@ -459,7 +476,6 @@ class DielCycle(BaseTab):
         w_width = qq_width
         w_height = 275
 
-
         # -- adding shaded time-series panel
         self.p = figure(
             tools=p_tools,
@@ -468,10 +484,9 @@ class DielCycle(BaseTab):
             height=p_height,
             toolbar_location="right",
             x_axis_type="datetime",
-            #margin=(-30, 0, 0, 0),
+            # margin=(-30, 0, 0, 0),
             min_border_left=50,
             min_border_right=30,
-
         )
         self.diel_shaded_plot(self.p)
 
@@ -485,7 +500,7 @@ class DielCycle(BaseTab):
             active_drag="xbox_select",
             toolbar_location="right",
             x_axis_type="datetime",
-            margin=(-30, 0, 0, 0), # moving bias higher and closer to the tseries plot
+            margin=(-30, 0, 0, 0),  # moving bias higher and closer to the tseries plot
             min_border_left=50,
             min_border_right=30,
         )
@@ -505,9 +520,8 @@ class DielCycle(BaseTab):
             y_range=self.p.y_range,
             margin=(55, 0, 0, 0),
             min_border_left=55,
-            #min_border_top=30,
+            # min_border_top=30,
             align="center",
-
         )
         self.scatter_plot(self.qq)
 
@@ -531,15 +545,13 @@ class DielCycle(BaseTab):
             toolbar_location="right",
             margin=(-5, 0, 0, 0),
             min_border_left=55,
-
-        
         )
         self.map_sites(self.w)
 
         self.p.add_tools(
             HoverTool(
                 tooltips=[
-                    ("Hour", "$index"+ ":00"),
+                    ("Hour", "$index" + ":00"),
                     ("NEON", "@NEON"),
                     ("CLM", "@CLM"),
                     ("Bias", "@Bias"),
@@ -596,7 +608,13 @@ class DielCycle(BaseTab):
             css_classes=["custom_select"],
         )
         self.menu_season = Select(
-            options=["Annual","MAM", "JJA", "SON", "DJF",],
+            options=[
+                "Annual",
+                "MAM",
+                "JJA",
+                "SON",
+                "DJF",
+            ],
             value=self.default_season,
             title="Season",
         )
@@ -608,11 +626,12 @@ class DielCycle(BaseTab):
 
         # -----------------------
         # -- adding download button
-        button = Button(label="Download",
-                        css_classes=["btn_style"],
-                        width=275,            
-                        margin=(0, 0, 0, 75),
-                        )
+        button = Button(
+            label="Download",
+            css_classes=["btn_style"],
+            width=275,
+            margin=(0, 0, 0, 75),
+        )
         button.js_on_event(
             "button_click",
             CustomJS(
@@ -622,7 +641,6 @@ class DielCycle(BaseTab):
                 ).read(),
             ),
         )
-
 
         # -----------------------------
         # adding menu behaviors:
@@ -640,21 +658,28 @@ class DielCycle(BaseTab):
         # -- neon site
         self.menu_site.on_change("value", self.update_variable)
         self.menu_site.on_change("value", self.update_site)
-        #self.menu.on_change("value", self.update_yaxis)
+        # self.menu.on_change("value", self.update_yaxis)
         self.menu_site.on_change("value", self.update_title)
 
         # -- create a layout
         layout = column(
-            row(self.menu_site, self.menu_var, self.menu_season,sizing_mode='stretch_width',),
+            row(
+                self.menu_site,
+                self.menu_var,
+                self.menu_season,
+                sizing_mode="stretch_width",
+            ),
             row(
                 column(self.p, self.q),
                 column(self.qq, self.w, button),
-                column(title, myTable, ),
-                sizing_mode='stretch_width',
+                column(
+                    title,
+                    myTable,
+                ),
+                sizing_mode="stretch_width",
             ),
         )
 
         # doc.add_root(layout)
         tab = Panel(child=layout, title="Diurnal Cycle")
         return tab
-

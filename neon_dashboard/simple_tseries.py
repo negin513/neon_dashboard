@@ -1,8 +1,20 @@
 from bokeh.plotting import figure
 from bokeh.layouts import column, row
-from bokeh.models import (Band, Button, ColumnDataSource, CustomJS, DataTable, 
-                          Div, DatetimeTickFormatter, HoverTool, Label, 
-                          Panel, Select, Slope, TableColumn)
+from bokeh.models import (
+    Band,
+    Button,
+    ColumnDataSource,
+    CustomJS,
+    DataTable,
+    Div,
+    DatetimeTickFormatter,
+    HoverTool,
+    Label,
+    Panel,
+    Select,
+    Slope,
+    TableColumn,
+)
 
 # Importing required custom modules
 from data_utils import *
@@ -11,9 +23,7 @@ from base_tab import *
 
 freq_list = ["all", "hourly", "daily", "monthly"]
 
-p_tools = (
-            "pan, wheel_zoom, box_zoom, box_select, undo, redo, save, reset, crosshair"
-        )
+p_tools = "pan, wheel_zoom, box_zoom, box_select, undo, redo, save, reset, crosshair"
 q_tools = "pan, box_zoom, box_select, lasso_select, crosshair"
 
 
@@ -66,14 +76,14 @@ class SimpleTseries(BaseTab):
         print(self.this_site["site_name"].values[0].replace(r"[][]", " "))
 
         x_fit, y_fit = fit_func(self.df_new)
-        print (x_fit)
-        print (y_fit)
-        print ('!!!!!!!!!!!!!!!!!!!')
+        print(x_fit)
+        print(y_fit)
+        print("!!!!!!!!!!!!!!!!!!!")
         df_fit = pd.DataFrame({"x": x_fit, "y": y_fit})
         df_fit.dropna(inplace=True)
-        print (df_fit['x'])
-        print (df_fit['y'])
-        print ('!!!!!!!!!!!!!!!!!!!')
+        print(df_fit["x"])
+        print(df_fit["y"])
+        print("!!!!!!!!!!!!!!!!!!!")
         self.source_fit = ColumnDataSource(df_fit)
 
     def tseries_plot(self, p):
@@ -267,7 +277,6 @@ class SimpleTseries(BaseTab):
     #     # regression_line = Slope(gradient=slope, y_intercept=intercept, line_color="red")
     #     #q.add_layout(regression_line)
     #     q.line("x", "y", source=self.source_fit, alpha=0.8, color="red", line_width=3)
-    
 
     def update_variable(self, attr, old, new):
         print("~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -337,7 +346,7 @@ class SimpleTseries(BaseTab):
         # qq.add_layout(mytext)
         # print (q)
         self.q.title.text = slope_label
-        #self.q.add_layout(regression_line)
+        # self.q.add_layout(regression_line)
 
         plot_title = (
             "NEON Site: "
@@ -440,8 +449,6 @@ class SimpleTseries(BaseTab):
             toolbar_location="right",
             margin=(-5, 0, 0, 0),
             min_border_left=55,
-
-        
         )
         self.map_sites(self.w)
 
@@ -466,11 +473,12 @@ class SimpleTseries(BaseTab):
 
         # -----------------------
         # -- adding download button
-        button = Button(label="Download",
-                        css_classes=["btn_style"],
-                        width=275,            
-                        margin=(0, 0, 0, 75),
-                        )
+        button = Button(
+            label="Download",
+            css_classes=["btn_style"],
+            width=275,
+            margin=(0, 0, 0, 75),
+        )
         button.js_on_event(
             "button_click",
             CustomJS(
@@ -495,7 +503,12 @@ class SimpleTseries(BaseTab):
 
         # layout = column(p, w)
         layout = column(
-            row(self.menu_site, self.menu_var, self.menu_freq, sizing_mode='stretch_width') ,
+            row(
+                self.menu_site,
+                self.menu_var,
+                self.menu_freq,
+                sizing_mode="stretch_width",
+            ),
             row(self.p, column(self.q, self.w, button)),
         )
 
