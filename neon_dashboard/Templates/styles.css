@@ -23,9 +23,9 @@
 
 .btn_style .bk-btn-default {
         color: #FDFEFE;
-        background-color: #21618C ;
+        background-color: #135eb0 ;
         #border-color: #adadad !important;
-        border-color: #21618C;
+        border-color: #135eb0;
         box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125) !important;
         font-size: 19px !important;
 }
@@ -42,3 +42,37 @@ h3 {
     font-size: 13pt;
     text-align: center;
 }
+
+a {
+    color: white; /* Normal link color */
+  }
+  
+  a:hover {
+    color: lemonchiffon; /* Link color on mouse-over */
+  }
+  
+  a:visited {
+    color: whitesmoke; /* Color of visited links */
+  }
+
+  body {
+    font-family: 'Quicksand';
+  }
+  
+  .bk-root {
+    font-family: 'Quicksand' !important;
+    font-weight: bold;
+    font-size: 19px;
+  }
+  
+  .footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #135eb0;
+    opacity: 1;
+    color: white;
+    text-align: left;
+    padding-left: 30px;
+  }

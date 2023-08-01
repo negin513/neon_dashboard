@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    
     <style>
       @import url('https://fonts.googleapis.com/css?family=Quicksand');
       body {
@@ -13,7 +14,10 @@
          font-size:19px
       }
       {% include 'styles.css' %}
+      {% include 'style.css' %}
+
     </style>
+
     {{ bokeh_css }}
     {{ bokeh_js }}
   </head>
@@ -21,7 +25,11 @@
     {{ plot_div|indent(8) }}
     {{ plot_script|indent(8) }}
   </body>
-        <footer>
-          <p>By Negin Sobhani, Dawn Lenz, Danica Lombardozzi, Will Wieder, Michael SanClements, David Durden, and Gordon Bonan</br> © Copyright 2022.</p>
-        </footer>
+
+
+  <div class="footer">
+    <p>Copyright &copy 2023 ; Developed by <a href="https://www.linkedin.com/in/neginsobhani">Negin Sobhani</a>  ; Special thanks to <a href="http://www.pascucci.org/">Valerio Pascucci</a> and <a href=https://ci-compass.org/people/giorgio-scorzelli/>Giorgio Scorzelli</a>. 
+  </div>
+
+
 </html>

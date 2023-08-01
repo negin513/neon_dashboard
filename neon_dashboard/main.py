@@ -77,7 +77,6 @@ def in_notebook():
         return False
 
 
-
 # ----------------- #
 # -- default values
 # ----------------- #
@@ -1084,41 +1083,64 @@ valid_vars = plot_vars
 #     return tab
 
 
-if __name__.startswith('bokeh'):
-    print ( " -----------------------------  ")
-    print ( " Starting bokeh application ... ")
+if __name__.startswith("bokeh"):
+    print(" -----------------------------  ")
+    print(" Starting bokeh application ... ")
 
     from .preload import Preload
 
-    neon_sites     = Preload.neon_sites
+    neon_sites = Preload.neon_sites
     neon_sites_pft = Preload.neon_sites_pft
-    df_all         = Preload.df_all
-    us_lon1, us_lat1, us_lon2, us_lat2=Preload.us_lon1, Preload.us_lat1, Preload.us_lon2, Preload.us_lat2
+    df_all = Preload.df_all
+    us_lon1, us_lat1, us_lon2, us_lat2 = (
+        Preload.us_lon1,
+        Preload.us_lat1,
+        Preload.us_lon2,
+        Preload.us_lat2,
+    )
 
     # getting 403 (permission denied on WIKIMEDIA)
-    #from bokeh.tile_providers import WIKIMEDIA, get_provider
-    #chosentile = get_provider(WIKIMEDIA)
+    # from bokeh.tile_providers import WIKIMEDIA, get_provider
+    # chosentile = get_provider(WIKIMEDIA)
 
-    neon_site=Preload.neon_sites[-1]
-    print ('~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-    print (neon_site)
+    neon_site = Preload.neon_sites[-1]
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    print(neon_site)
 
-    tseries_doc = SimpleTseries(df_all, neon_sites_pft, neon_sites, default_var, default_freq, default_site,        us_lat1,
+    tseries_doc = SimpleTseries(
+        df_all,
+        neon_sites_pft,
+        neon_sites,
+        default_var,
+        default_freq,
+        default_site,
+        us_lat1,
         us_lat2,
         us_lon1,
-        us_lon2,)
+        us_lon2,
+    )
     tab_1 = tseries_doc.create_tab()
-    #tab_1 = simple_tseries(df_all, neon_sites_pft,neon_site)
-    
-    diel_doc = DielCycle(df_all, neon_sites_pft, neon_sites, default_var, default_freq, default_site,        us_lat1,         us_lat2,
+    # tab_1 = simple_tseries(df_all, neon_sites_pft,neon_site)
+
+    diel_doc = DielCycle(
+        df_all,
+        neon_sites_pft,
+        neon_sites,
+        default_var,
+        default_freq,
+        default_site,
+        us_lat1,
+        us_lat2,
         us_lon1,
-        us_lon2,)
-   
+        us_lon2,
+        default_season,
+    )
+
     DielCycle
     tab_2 = diel_doc.create_tab()
 
-    #tabs = Tabs(tabs=[tab_1, tab_2])
-    tabs = Tabs(tabs=[ tab_1, tab_2])
+    # tabs = Tabs(tabs=[tab_1, tab_2])
+    tabs = Tabs(tabs=[tab_1, tab_2])
 
     # doc.add_root(tabs)
 

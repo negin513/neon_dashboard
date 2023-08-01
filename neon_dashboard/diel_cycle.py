@@ -1,48 +1,29 @@
-from bokeh.plotting import figure
-from bokeh.layouts import column, row
-from bokeh.models import (
-    HoverTool,
-    ColumnDataSource,
-    Band,
-    Slope,
-    DataTable,
-    TableColumn,
-    Div,
-    Label,
-    Select,
-    Button,
-    DatetimeTickFormatter,
-)
-from bokeh.tile_providers import get_provider, Vendors
-import pandas as pd
-import numpy as np
+# Standard Library Imports
 import os
-from bokeh.models import Panel
-from bokeh.events import ButtonClick
-from bokeh import models
-from bokeh import events
-from bokeh.models import CustomJS
 
-from data_utils import *
+# Related Third-Party Imports
+import numpy as np
+
+from bokeh import models, events
+from bokeh.layouts import column, row
+from bokeh.models import (Band, Button, ColumnDataSource, CustomJS, DataTable, 
+                          Div, DatetimeTickFormatter, HoverTool, Label, 
+                          Panel, Select, Slope, TableColumn)
+from bokeh.plotting import figure
+from bokeh.tile_providers import get_provider, Vendors
+
+# Importing required custom modules
 from base_tab import *
+from data_utils import *
 
 # ----------------- #
 # -- default values
 # ----------------- #
 
-default_site = "ABBY"
-default_freq = "daily"
-default_var = "EFLX_LH_TOT"
-default_season = "Annual"
-
-
-# -- what are tools options
-# tools = "hover, box_zoom, undo, crosshair"
-p_tools = (
-    "pan, wheel_zoom, box_zoom,  undo, redo, save, reset, crosshair,xbox_select"
-)
-q_tools = "pan,  box_zoom, box_select, lasso_select, crosshair"
-
+# default_site = "ABBY"
+# default_freq = "daily"
+# default_var = "EFLX_LH_TOT"
+# default_season = "Annual"
 
 
 class DielCycle(BaseTab):
@@ -52,22 +33,7 @@ class DielCycle(BaseTab):
     Returns:
         bokeh.models.Panel: The Diel Cycle tab panel.
     """
-    TOOLTIP = [("Hour", "$index"), ("NEON", "@NEON"), ("CLM", "@CLM"), ("Bias", "@Bias")]
 
-    P_TOOLS = "pan, wheel_zoom, box_zoom, undo, redo, save, reset, crosshair,xbox_select"
-    Q_TOOLS = "pan, box_zoom, box_select, lasso_select, crosshair"
-
-    P_WIDTH = 950
-    P_HEIGHT = 450
-
-    Q_WIDTH = 950
-    Q_HEIGHT = 275
-
-    QQ_WIDTH = 375
-    QQ_HEIGHT = 375
-
-    W_WIDTH = 375
-    W_HEIGHT = 275
 
     def __init__(
         self,
@@ -81,7 +47,29 @@ class DielCycle(BaseTab):
         us_lat2,
         us_lon1,
         us_lon2,
+        default_season="Annual",
     ):
+        """
+        Initializes the DielCycle class.
+
+        Args:
+            df_all : DataFrame
+                The DataFrame containing all the data.
+            neon_sites_pft : DataFrame
+                The DataFrame containing NEON site data.
+            neon_sites : list
+                List of all NEON sites.
+            default_var : str
+                The default variable to plot.
+            default_freq : str
+                The default frequency.
+            default_site : str
+                The default site.
+            us_lat1, us_lat2, us_lon1, us_lon2 : float
+                The boundaries for US latitudes and longitudes.
+            default_season : str, optional
+                The default season.
+        """
         super().__init__(
             df_all,
             neon_sites_pft,
@@ -94,13 +82,17 @@ class DielCycle(BaseTab):
             us_lon1,
             us_lon2,
         )
+        self.default_season = default_season
+        
         self.load_data()
 
     def load_data(self):
         """
-        Function for creating ColumnDataSouces:
+        Function for creating ColumnDataSouces.
         """
-        self.df_new = get_diel_data(self.df_all, self.default_var, default_season, self.default_site)
+        self.df_new = get_diel_data(
+            self.df_all, self.default_var, self.default_season, self.default_site
+        )
         self.source = ColumnDataSource(self.df_new)
 
         self.this_site = get_neon_site(self.neon_sites_pft, self.default_site)
@@ -108,10 +100,10 @@ class DielCycle(BaseTab):
 
         x_fit, y_fit = fit_func(self.df_new)
         self.source_fit = ColumnDataSource(data={"x": x_fit, "y": y_fit})
-        
+
         print(self.this_site["site_name"].values[0].replace(r"[][]", " "))
-        
-    def diel_shaded_plot(self,p):
+
+    def diel_shaded_plot(self, p):
         p.line(
             "local_hour_dt",
             "NEON",
@@ -225,7 +217,7 @@ class DielCycle(BaseTab):
         p.axis.axis_label_text_font_style = "bold"
 
         p.grid.grid_line_alpha = 0.35
-        p.title.text_font_size = "18pt"
+        p.title.text_font_size = "15pt"
 
         # p.xaxis.axis_label = 'Hour of Day'
         p.yaxis.axis_label = "Latent Heat Flux [W m⁻²]"
@@ -236,13 +228,18 @@ class DielCycle(BaseTab):
         #              this_site['state'].values[0].replace(r'[][]', ' ') +
         #              ' ('+default_site+') ')
 
-        p.title.text = (
-            "Diurnal Cycle for Neon Site : "
-            + default_site
+        plot_title = (
+            "Diurnal Cycle \n"
+            + "NEON Site : "
+            + self.this_site["site_name"].values[0].replace(r"[][]", " ")
+            + ", "
+            + self.this_site["state"].values[0].replace(r"[][]", " ")
             + " ("
-            + default_season
-            + " Average)"
-        )
+            + self.default_site
+            + ") " 
+            + " -- " + self.default_season + " "+ "Average") 
+    
+        p.title.text = plot_title
 
         p.legend.location = "top_right"
         p.legend.label_text_font_size = "13pt"
@@ -255,8 +252,8 @@ class DielCycle(BaseTab):
         p.xaxis.formatter = DatetimeTickFormatter(days="%H:%M", hours="%H:%M")
         p.xaxis.major_label_text_color = "white"
         p.xaxis[0].ticker.desired_num_ticks = 12
-        
-    def diel_bias_plot(self,q):
+
+    def diel_bias_plot(self, q):
         q.line(
             "local_hour_dt",
             "Bias",
@@ -312,127 +309,22 @@ class DielCycle(BaseTab):
         q.xaxis.major_label_orientation = np.pi / 4
         q.xaxis[0].ticker.desired_num_ticks = 12
 
-    def scatter_plot(self,q):
-        q.circle(
-            "NEON",
-            "CLM",
-            source=self.source,
-            alpha=0.8,
-            color="navy",
-            fill_alpha=0.4,
-            size=13,
-            hover_color="firebrick",
-            selection_color="orange",
-            nonselection_alpha=0.1,
-            selection_alpha=0.5,
-        )
 
-        q.xaxis.major_label_text_color = "dimgray"
-        q.xaxis.major_label_text_font_size = "13pt"
-        q.xaxis.major_label_text_font_style = "bold"
-
-        q.yaxis.major_label_text_color = "dimgray"
-        q.yaxis.major_label_text_font_size = "13pt"
-        q.yaxis.major_label_text_font_style = "bold"
-
-        q.xaxis.axis_label_text_font_size = "13pt"
-        q.yaxis.axis_label_text_font_size = "13pt"
-
-        q.xaxis.axis_label_text_font_style = "bold"
-        q.yaxis.axis_label_text_font_style = "bold"
-
-        q.xaxis.axis_label_text_font = "Verdana"
-        q.yaxis.axis_label_text_font = "Verdana"
-
-        q.axis.axis_label_text_font_style = "bold"
-
-        q.grid.grid_line_alpha = 0.35
-        q.title.text_font_size = "12pt"
-
-        q.xaxis.axis_label = "NEON"
-        q.yaxis.axis_label = "CTSM"
-        #df_new = get_diel_data(self.df_all, self.default_var, self.menu_season.value, self.menu_site.value)
-
-        print("++++++++++++++++++++")
-        result = find_regline(self.df_new, "NEON", "CLM")
-        print("df_new.NEON:", self.df_new["NEON"])
-        print("df_new.CLM:", self.df_new["CLM"])
-        print("slope:", result.slope)
-        print("intercept:", result.intercept)
-        print("new r_value:", result.rvalue**2)
-
-        slope_label = (
-            "y = "
-            + "{:.2f}".format(result.slope)
-            + "x"
-            + " + "
-            + "{:.2f}".format(result.intercept)
-            + " (R² = "
-            + "{:.3f}".format(result.rvalue**2)
-            + ")"
-        )
-        print(slope_label)
-
-        #mytext = Label(
-        #    text=slope_label,
-        #    x=0 + 20,
-        #    y=q_height - 100,
-        #    x_units="screen",
-        #    y_units="screen",
-        #    text_align="left",
-        #)
-
-        regression_line = Slope(
-            gradient=result.slope,
-            y_intercept=result.slope,
-            line_color="navy",
-            line_width=2,
-            line_alpha=0.8,
-        )
-
-        # print (mytext)
-        # q.add_layout(mytext)
-        # q.add_layout(regression_line)
-        q.title.text = slope_label
-
-        # x = range(0,50)
-        # y = slope*x+intercept
-        oneone_line = Slope(
-            gradient=1,
-            y_intercept=0,
-            line_color="gray",
-            line_width=2,
-            line_alpha=0.3,
-            line_dash="dashed",
-        )
-        q.add_layout(oneone_line)
-
-        # q.line(x, y,alpha=0.8, line_width=4, color="gray")
-
-        # x = df_new['NEON']
-        # y = df_new['CLM']
-
-        # par = np.polyfit(x, y, 1, full=True)
-        # slope=par[0][0]
-        # intercept=par[0][1]
-        # print ('------------')
-        # print ('slope:', slope)
-        # print ('intercept:', intercept)
-        # Make the regression line
-        # regression_line = Slope(gradient=slope, y_intercept=intercept, line_color="red")
-        # q.add_layout(regression_line)
-        q.line("x", "y", source=self.source_fit, alpha=0.8, color="navy", line_width=3)
-        
-    def update_variable(self,attr, old, new):
+    def update_variable(self, attr, old, new):
         print("~~~~~~~~~~~~~~~~~~~~~~~~")
         print("calling update_variable :")
         print(" - freq : ", self.menu_season.value)
         print(" - site : ", self.menu_site.value)
-        print(" - var menu: ", self.menu.value)
-        new_var = rev_vars_dict[self.menu.value]
-        print(" - var: ", rev_vars_dict[self.menu.value])
+        print(" - var menu: ", self.menu_var.value)
+        new_var = rev_vars_dict[self.menu_var.value]
+        print(" - var: ", rev_vars_dict[self.menu_var.value])
 
-        df_new = get_diel_data(self.df_all, rev_vars_dict[self.menu.value], self.menu_season.value, self.menu_site.value)
+        df_new = get_diel_data(
+            self.df_all,
+            rev_vars_dict[self.menu_var.value],
+            self.menu_season.value,
+            self.menu_site.value,
+        )
         self.update_stats(df_new)
 
         self.source.data = df_new
@@ -491,9 +383,11 @@ class DielCycle(BaseTab):
         self.qq.title.text = slope_label
         # qq.add_layout(regression_line)
 
-    def update_site(self,attr, old, new):
-        new_var = rev_vars_dict[self.menu.value]
-        df_new = get_diel_data(self.df_all, new_var, self.menu_season.value, self.menu_site.value)
+    def update_site(self, attr, old, new):
+        new_var = rev_vars_dict[self.menu_var.value]
+        df_new = get_diel_data(
+            self.df_all, new_var, self.menu_season.value, self.menu_site.value
+        )
         print("-----")
         print(df_new)
         self.source.data.update = df_new
@@ -508,16 +402,22 @@ class DielCycle(BaseTab):
         self.source2.data = this_site
         self.update_stats(df_new)
 
-    def update_title(self,attr, old, new):
-        self.p.title.text = (
-            "Diurnal Cycle for Neon Site : "
-            + self.menu_site.value
+    def update_title(self, attr, old, new):
+        this_site = get_neon_site(self.neon_sites_pft, self.menu_site.values)
+        plot_title = (
+            "Diurnal Cycle \n"
+            + "NEON Site : "
+            + self.this_site["site_name"].values[0].replace(r"[][]", " ")
+            + ", "
+            + self.menu_site.value["state"].values[0].replace(r"[][]", " ")
             + " ("
-            + self.menu_season.value
-            + " Average)"
-        )
+            + self.menu_site.value
+            + ") " 
+            + " -- " + self.menu_season.value + " "+ "Average")
+        
+        self.p.title.text = plot_title
 
-    def update_stats(self,df_new):
+    def update_stats(self, df_new):
         stat_summary = (
             df_new[["NEON", "CLM"]].describe().applymap(lambda x: f"{x:0.3f}")
         )
@@ -532,20 +432,34 @@ class DielCycle(BaseTab):
 
     def create_tab(self):
 
-        # -- layout values...
-        p_width = 950
-        p_height = 450
+        # -----------------------
+        TOOLTIP = [
+            ("Hour", "$index"+ ":00"),
+            ("NEON", "@NEON"),
+            ("CLM", "@CLM"),
+            ("Bias", "@Bias"),
+        ]
 
-        q_width = 950
+        # -- what are tools options
+        p_tools = (
+            "pan, wheel_zoom, box_zoom, undo, redo, save, reset, crosshair,xbox_select"
+        )
+
+        q_tools = "pan, box_zoom, box_select, lasso_select, crosshair"
+
+        p_width = 950
+        p_height = 500
+
+        q_width = p_width
         q_height = 275
 
         qq_width = 375
-        qq_height = 375
+        qq_height = qq_width
 
-        w_width = 375
+        w_width = qq_width
         w_height = 275
 
-        # -----------------------
+
         # -- adding shaded time-series panel
         self.p = figure(
             tools=p_tools,
@@ -554,6 +468,10 @@ class DielCycle(BaseTab):
             height=p_height,
             toolbar_location="right",
             x_axis_type="datetime",
+            #margin=(-30, 0, 0, 0),
+            min_border_left=50,
+            min_border_right=30,
+
         )
         self.diel_shaded_plot(self.p)
 
@@ -567,7 +485,9 @@ class DielCycle(BaseTab):
             active_drag="xbox_select",
             toolbar_location="right",
             x_axis_type="datetime",
-            margin=(-30, 0, 0, 0),
+            margin=(-30, 0, 0, 0), # moving bias higher and closer to the tseries plot
+            min_border_left=50,
+            min_border_right=30,
         )
         self.diel_bias_plot(self.q)
 
@@ -583,7 +503,11 @@ class DielCycle(BaseTab):
             active_drag="box_select",
             x_range=self.p.y_range,
             y_range=self.p.y_range,
-            margin=(17, 0, 0, 0),
+            margin=(55, 0, 0, 0),
+            min_border_left=55,
+            #min_border_top=30,
+            align="center",
+
         )
         self.scatter_plot(self.qq)
 
@@ -602,16 +526,20 @@ class DielCycle(BaseTab):
             match_aspect=True,
             max_height=w_height,
             max_width=w_width,
-            tooltips=TOOLTIP,
+            tooltips=tooltip,
             tools=["wheel_zoom", "pan"],
             toolbar_location="right",
+            margin=(-5, 0, 0, 0),
+            min_border_left=55,
+
+        
         )
         self.map_sites(self.w)
 
         self.p.add_tools(
             HoverTool(
                 tooltips=[
-                    ("Hour", "$index"),
+                    ("Hour", "$index"+ ":00"),
                     ("NEON", "@NEON"),
                     ("CLM", "@CLM"),
                     ("Bias", "@Bias"),
@@ -619,13 +547,17 @@ class DielCycle(BaseTab):
             )
         )
 
-        self.q.add_tools(HoverTool(tooltips=[("Hour", "$index" + ":00"), ("Bias", "@Bias")]))
+        self.q.add_tools(
+            HoverTool(tooltips=[("Hour", "$index" + ":00"), ("Bias", "@Bias")])
+        )
 
         self.qq.add_tools(HoverTool(tooltips=[("NEON", "$x"), ("CLM", "$y")]))
 
         pd.set_option("display.float_format", lambda x: "%.3f" % x)
 
-        stat_summary = self.df_new[["NEON", "CLM"]].describe().applymap(lambda x: f"{x:0.3f}")
+        stat_summary = (
+            self.df_new[["NEON", "CLM"]].describe().applymap(lambda x: f"{x:0.3f}")
+        )
         self.source3 = ColumnDataSource(stat_summary)
 
         # title = 'Statistical Summary'
@@ -635,7 +567,7 @@ class DielCycle(BaseTab):
         title = Div(
             text='<h3 style="text-align: center">Summary Statistics</h3>',
             width=350,
-            margin=(0, 0, 0, 10),
+            margin=(20, 0, 0, 55),
         )
 
         # stats = PreText(text=stats_text, width=500,sizing_mode='stretch_width',style={'color': 'dimgray','font-weight': 'bold','font-size':'11pt','font-family': 'Arial'})
@@ -652,54 +584,77 @@ class DielCycle(BaseTab):
             index_position=None,
             fit_columns=False,
             width=350,
-            margin=(0, 0, 0, 10),
+            margin=(0, 0, 0, 55),
         )
 
         # -----------------------
         # -- adding menu options
-        self.menu = Select(
+        self.menu_var = Select(
             options=list(rev_vars_dict.keys()),
             value=vars_dict[self.default_var],
             title="Variable",
             css_classes=["custom_select"],
         )
         self.menu_season = Select(
-            options=["DJF", "MAM", "JJA", "SON", "Annual"],
-            value=default_season,
+            options=["Annual","MAM", "JJA", "SON", "DJF",],
+            value=self.default_season,
             title="Season",
         )
-        self.menu_site = Select(options=neon_sites, value=default_site, title="Neon Site")
+        self.menu_site = Select(
+            options=self.neon_sites,
+            value=self.default_site,
+            title="Neon Site",
+        )
 
-        button = Button(label="Download", css_classes=["btn_style"], width=300)
+        # -----------------------
+        # -- adding download button
+        button = Button(label="Download",
+                        css_classes=["btn_style"],
+                        width=275,            
+                        margin=(0, 0, 0, 75),
+                        )
         button.js_on_event(
             "button_click",
             CustomJS(
-                args=dict(source=self.source), code=open(os.path.join(os.path.dirname(__file__),"models", "download.js")).read()
+                args=dict(source=self.source),
+                code=open(
+                    os.path.join(os.path.dirname(__file__), "models", "download.js")
+                ).read(),
             ),
         )
-        
+
+
+        # -----------------------------
+        # adding menu behaviors:
+
         # -----------------------------
         # --variable
-        self.menu.on_change("value", self.update_variable)
-        self.menu.on_change("value", self.update_yaxis)
+        self.menu_var.on_change("value", self.update_variable)
+        self.menu_var.on_change("value", self.update_yaxis)
 
         # -- season
         self.menu_season.on_change("value", self.update_variable)
-        self.menu.on_change("value", self.update_yaxis)
+        self.menu_var.on_change("value", self.update_yaxis)
         self.menu_season.on_change("value", self.update_title)
 
         # -- neon site
-        self.menu_site.on_change("value", self.update_site)
         self.menu_site.on_change("value", self.update_variable)
-        self.menu.on_change("value", self.update_yaxis)
+        self.menu_site.on_change("value", self.update_site)
+        #self.menu.on_change("value", self.update_yaxis)
         self.menu_site.on_change("value", self.update_title)
 
         # -- create a layout
         layout = column(
-            row(self.menu, self.menu_season, self.menu_site),
-            row(column(self.p, self.q), column(self.qq, self.w), column(title, myTable, button)),
+            row(self.menu_site, self.menu_var, self.menu_season,sizing_mode='stretch_width',),
+            row(
+                column(self.p, self.q),
+                column(self.qq, self.w, button),
+                column(title, myTable, ),
+                sizing_mode='stretch_width',
+            ),
         )
 
         # doc.add_root(layout)
         tab = Panel(child=layout, title="Diurnal Cycle")
         return tab
+

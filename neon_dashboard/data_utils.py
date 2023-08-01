@@ -269,6 +269,7 @@ def find_regline(df, var, sim_var_name):
     df_temp.dropna(inplace=True)
 
     result = stats.linregress(df_temp[var], df_temp[sim_var_name])
+    print ('result:', result)
     return result
 
 
@@ -286,7 +287,7 @@ def fit_func(df):
 
     # Subset DataFrame
     df_subset = df[["NEON", "CLM"]]
-
+    df_subset.dropna(inplace=True)  
     # Perform linear regression
     slope, intercept, _, _, _ = stats.linregress(df_subset["NEON"], df_subset["CLM"])
 
@@ -301,8 +302,11 @@ def fit_func(df):
     x_fit = np.arange(min_neon, max_neon)
 
     # Calculate 'CLM' predictions using the linear regression model
+    print ('slope', slope)
+    print ('intercept', intercept)
+    print ('x_fit', x_fit)
     y_fit = slope * x_fit + intercept
-
+    print ('y_fit', y_fit)
     return x_fit, y_fit
 
 

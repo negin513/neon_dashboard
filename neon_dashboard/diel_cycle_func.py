@@ -39,8 +39,6 @@ plot_vars = ["FSH", "EFLX_LH_TOT", "Rnet", "NEE", "GPP"]
 valid_vars = plot_vars
 
 
-
-
 # --------------------------- #
 def diel_doc(df_all, neon_sites_pft, us_lat1, us_lat2, us_lon1, us_lon2):
     """
@@ -462,7 +460,7 @@ def diel_doc(df_all, neon_sites_pft, us_lat1, us_lat2, us_lon1, us_lon2):
         match_aspect=True,
         max_height=w_height,
         max_width=w_width,
-        tooltips=TOOLTIP,
+        tooltips=tooltip,
         tools=["wheel_zoom", "pan"],
         toolbar_location="right",
     )
