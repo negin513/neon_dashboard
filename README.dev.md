@@ -98,6 +98,5 @@ bokeh serve \
   --allow-websocket-origin=* \
   --address=0.0.0.0 \
   --use-xheaders \
-  --index neon_dashboard \
   neon_dashboard
 ```
