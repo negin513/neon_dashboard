@@ -1,5 +1,10 @@
 # ----------------------------------
 # -- Functions and objects for this code
+"""
+Author: Negin Sobhani
+Created on: 2022-10-01
+Contact Info: negins@ucar.edu
+"""
 
 import os
 import glob
@@ -115,8 +120,10 @@ def load_and_preprocess_data(neon_sites, csv_dir):
     for neon_site in neon_sites:
         try:
             csv_file = f"preprocessed_{neon_site}_2021.csv"
-            df = dd.read_csv(os.path.join(csv_dir, csv_file), parse_dates=["time"])
+            __filename=os.path.join(csv_dir, csv_file)
+            df = dd.read_csv(__filename, parse_dates=["time"])
             df_list.append(df)
+            print(f"Read {__filename}")
         except Exception as e:
             print(f"Error loading data for site {neon_site}: {str(e)}")
             failed_sites.append(neon_site)
@@ -213,7 +220,7 @@ def get_diel_data(df, var, season, this_site):
         df = df[df["season"] == season]
 
     # -- Filter DataFrame by site
-    df = df[df["site"] == this_site]#.compute()
+    df = df[df["site"] == this_site]  # .compute()
 
     # Group the DataFrame by 'local_hour' and calculate the mean and standard deviation
     diel_df_mean = df.groupby("local_hour").mean().reset_index()
@@ -269,6 +276,7 @@ def find_regline(df, var, sim_var_name):
     df_temp.dropna(inplace=True)
 
     result = stats.linregress(df_temp[var], df_temp[sim_var_name])
+    print("result:", result)
     return result
 
 
@@ -286,7 +294,7 @@ def fit_func(df):
 
     # Subset DataFrame
     df_subset = df[["NEON", "CLM"]]
-
+    df_subset.dropna(inplace=True)
     # Perform linear regression
     slope, intercept, _, _, _ = stats.linregress(df_subset["NEON"], df_subset["CLM"])
 
@@ -301,8 +309,11 @@ def fit_func(df):
     x_fit = np.arange(min_neon, max_neon)
 
     # Calculate 'CLM' predictions using the linear regression model
+    print("slope", slope)
+    print("intercept", intercept)
+    print("x_fit", x_fit)
     y_fit = slope * x_fit + intercept
-
+    print("y_fit", y_fit)
     return x_fit, y_fit
 
 
