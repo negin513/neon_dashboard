@@ -1,5 +1,10 @@
 # ----------------------------------
 # -- Functions and objects for this code
+"""
+Author: Negin Sobhani
+Created on: 2022-10-01
+Contact Info: negins@ucar.edu
+"""
 
 import os
 import glob
