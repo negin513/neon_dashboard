@@ -120,8 +120,10 @@ def load_and_preprocess_data(neon_sites, csv_dir):
     for neon_site in neon_sites:
         try:
             csv_file = f"preprocessed_{neon_site}_2021.csv"
-            df = dd.read_csv(os.path.join(csv_dir, csv_file), parse_dates=["time"])
+            __filename=os.path.join(csv_dir, csv_file)
+            df = dd.read_csv(__filename, parse_dates=["time"])
             df_list.append(df)
+            print(f"Read {__filename}")
         except Exception as e:
             print(f"Error loading data for site {neon_site}: {str(e)}")
             failed_sites.append(neon_site)
