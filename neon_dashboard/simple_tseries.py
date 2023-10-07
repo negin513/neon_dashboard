@@ -162,6 +162,12 @@ class SimpleTseries(BaseTab):
 
         p.title.text = plot_title
 
+        print (self.this_site["Site"].values[0].replace(r"[][]", " "))
+        print (self.this_site["state"].values[0].replace(r"[][]", " "))
+        print(self.this_site["site_name"].values[0].replace(r"[][]", " "))
+        print ('~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        print ('~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        print ('~~~~~~~~~~~~~~~~~~~~~~~~~~')
         p.legend.location = "top_right"
         p.legend.label_text_font_size = "15pt"
         p.legend.label_text_font_style = "bold"
@@ -488,9 +494,9 @@ class SimpleTseries(BaseTab):
         button.js_on_event(
             "button_click",
             CustomJS(
-                args=dict(source=self.source),
-                code=open(
-                    os.path.join(os.path.dirname(__file__), "models", "download.js")
+                #args=dict(source=self.source, site_name=self.this_site["Site"].values[0].replace(r"[][]", " ")),
+                args=dict(source=self.source, download_site=self.menu_site.value, download_freq=self.menu_freq.value, download_var=self.menu_var.value),
+                code=open(os.path.join(os.path.dirname(__file__), "models", "download.js")
                 ).read(),
             ),
         )
