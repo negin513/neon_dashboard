@@ -1,17 +1,24 @@
 function table_to_csv(source) {
-    const columns = Object.keys(source.data)
-    const nrows = source.get_length()
-    const lines = [columns.join(',')]
+    const columns = Object.keys(source.data);
+    const nrows = source.get_length();
+    const lines = [columns.join(',')];
 
     for (let i = 0; i < nrows; i++) {
         let row = [];
         for (let j = 0; j < columns.length; j++) {
-            const column = columns[j]
-            row.push(source.data[column][i].toString())
+            const column = columns[j];
+            let cellValue = source.data[column][i];
+            // Check if the column name suggests it's a time/date column
+            // Adjust the condition to fit your specific column naming
+            if (column.toLowerCase().includes('time') || column.toLowerCase().includes('date')) {
+                // Assuming UNIX timestamp in milliseconds, adjust accordingly
+                cellValue = new Date(cellValue).toISOString();
+            }
+            row.push(cellValue.toString());
         }
-        lines.push(row.join(','))
+        lines.push(row.join(','));
     }
-    return lines.join('\n').concat('\n')
+    return lines.join('\n').concat('\n');
 }
 
 
