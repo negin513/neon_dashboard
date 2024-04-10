@@ -1,15 +1,20 @@
 # 📚 NCAR-NEON Dashboard Readme 📚
 
-**To access the NEON Dashboard, please visit the following link: [Neon Dashboard](https://ncar.nationalsciencedatafabric.org/neon-demo/v1/).
+**To access the NEON Dashboard, please visit the following link: [Neon Dashboard](https://ncar.nationalsciencedatafabric.org/neon-demo/v1/).**
 
-The NCAR-NEON Dashboard provides an interactive visualization interface for visualizing and analyzing data collected by the [National Ecological Observatory Network (NEON)](https://www.neonscience.org/) and compare it with with the Community Terrestrial System Model (CTSM) simulations at those points. It was created as part of the research project outlined in [this paper](https://gmd.copernicus.org/articles/16/5979/2023/gmd-16-5979-2023.pdf).
+The NCAR-NEON Dashboard provides an interactive visualization interface for visualizing and analyzing data collected by the [National Ecological Observatory Network (NEON)](https://www.neonscience.org/) and comparing it with with the Community Terrestrial System Model (CTSM) simulations at those points. It was created as part of the research project outlined in [this paper](https://gmd.copernicus.org/articles/16/5979/2023/gmd-16-5979-2023.pdf).
 
-This dashboard enables users from anywhere in the world to explore and interact with model outputs and observations on the fly without any requirements for advanced computational resouces.  This tool allows users to generate graphs and statistical summaries comparing CTSM simulations and observational data for NEON sites without downloading the observational data or running the model. Users access a Graphical User Interface (GUI) to select individual NEON sites, variables, and output frequencies to visualize. The tool offers different types of interactive visualizations and statistical summaries based on user selections. This interactive visualization dashboard does not require specialist knowledge to operate; therefore, it can be used for educational outreach activities and in classrooms. Moreover, users
+This dashboard enables users from anywhere in the world to explore and interact with model outputs and observations on the fly without any requirements for advanced computational resources.  This tool allows users to generate graphs and statistical summaries comparing CTSM simulations and observational data for NEON sites without downloading the observational data or running the model. Users access a Graphical User Interface (GUI) to select individual NEON sites, variables, and output frequencies to visualize. The tool offers different types of interactive visualizations and statistical summaries based on user selections. This interactive visualization dashboard does not require specialist knowledge to operate; therefore, it can be used for educational outreach activities and in classrooms. Moreover, users
 can interact with the dashboard using a browser, so it is possible to interact with the plots via a tablet or smartphone.
 
-Users can customize the plots by selecting different data sources, time periods, and geographic regions. This dashboard is currently hosted on [the National Science Data Fabric (NSDF)](https://nationalsciencedatafabric.org/) and is publicly accessibler
+Users can customize the plots by selecting different data sources, time periods, and geographic regions. This dashboard is currently hosted on [the National Science Data Fabric (NSDF)](https://nationalsciencedatafabric.org/) and is publicly accessible to anyone to use!
 
-Besides using the above link to access the NEON Dashboard, you can also run the application on your local machine. This README provides instructions on how to run the NEON Dashboard application using a Docker container or without using a Docker container.
+Besides using the above link to access the NEON Dashboard, you can also run the application on your local machine. This README provides instructions on how to run the NEON Dashboard application using or without a Docker container.
+
+--------------------------------------------------
+## How to Cite this Dashboard? 
+
+
 
 --------------------------------------------------
 
@@ -17,7 +22,7 @@ Besides using the above link to access the NEON Dashboard, you can also run the 
 
 There are many ways to run this application on your local machine:
 
-### 🚀 Easiest Method: Using Docker Image Directly! 📦
+### 🚀 Easiest Method: Using Docker Image Directly!
 
 To get started with the NEON Dashboard Bokeh application, you can use the easiest method by pulling the pre-built Docker image from Docker Hub. 📦
 
@@ -67,41 +72,6 @@ To run NEON Dashboard without using a Docker container, you'll need to have Cond
    The `--allow-websocket-origin` flag is used to enable connections from the local host.
 
 5. The NEON Dashboard should now be accessible in your web browser at `http://localhost:5006`.
-
-
-
-
-
-### ### 🚀 How to Run with Container? 🚀
-
-To run NEON Dashboard using Docker container, follow these steps:
-
-1. Make sure you have Docker installed on your system.
-
-2. Clone or download the NEON Dashboard repository from https://github.com/negin513/neon_dashboard.
-    ```
-    git clone https://github.com/negin513/neon_dashboard
-    ```
-
-3. Navigate to the root directory of the cloned/downloaded repository.
-    ```
-    cd neon_dashboard
-    ```
-
-4. Build the Docker image using the provided Dockerfile:
-   ```
-   docker build -t neon-app .
-   ```
-
-5. Once the image is built, run the container with port mapping:
-
-   ```
-   docker run -p 5006:5006 neon-app
-   ```
-
-6. The NEON Dashboard should now be accessible in your web browser at `http://localhost:5006`.
-
-Sure! Here's an additional section on how to run NEON Dashboard without using a Docker container, using Conda for managing the Python environment.
 
 ## 📄 Citing the Paper 📄
 
