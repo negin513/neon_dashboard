@@ -1,6 +1,6 @@
-__pycache__/
 .ipynb_checkpoints
 build/
+__pycache__/
 neon_dashboard/__pycache__/
 .venv
 .vscode/
