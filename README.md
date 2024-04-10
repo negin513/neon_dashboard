@@ -1,5 +1,7 @@
 # 📚 NCAR-NEON Dashboard Readme 📚
 
+[![DOI](https://zenodo.org/badge/558070250.svg)](https://zenodo.org/doi/10.5281/zenodo.10956996)
+
 **To access the NEON Dashboard, please visit the following link: [Neon Dashboard](https://ncar.nationalsciencedatafabric.org/neon-demo/v1/).**
 
 The NCAR-NEON Dashboard provides an interactive visualization interface for visualizing and analyzing data collected by the [National Ecological Observatory Network (NEON)](https://www.neonscience.org/) and comparing it with with the Community Terrestrial System Model (CTSM) simulations at those points. It was created as part of the research project outlined in [this paper](https://gmd.copernicus.org/articles/16/5979/2023/gmd-16-5979-2023.pdf).
@@ -14,6 +16,7 @@ Besides using the above link to access the NEON Dashboard, you can also run the 
 --------------------------------------------------
 ## How to Cite this Dashboard? 
 
+If you use NEON Dashboard in your research or work and want to cite the original paper, please use this DOI for citing this dashboard:  [![DOI](https://zenodo.org/badge/558070250.svg)](https://zenodo.org/doi/10.5281/zenodo.10956996)
 
 
 --------------------------------------------------
@@ -75,6 +78,6 @@ To run NEON Dashboard without using a Docker container, you'll need to have Cond
 
 ## 📄 Citing the Paper 📄
 
-If you use NEON Dashboard in your research or work and want to cite the original paper, please use the following citation format [***].
+If you use NEON Dashboard in your research or work and want to cite the original paper, please use the following citation:
 
 🎉🎉🎉 Have fun exploring your NEON data with NEON Dashboard! 🎉🎉🎉
