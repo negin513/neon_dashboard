@@ -23,6 +23,8 @@ If you use NEON Dashboard in your research or work and want to cite the original
 
 ## How to run the NEON Dashboard application yourself?
 
+Besides interacting with neon dashboard at [Neon Dashboard](https://ncar.nationalsciencedatafabric.org/neon-demo/v1/), you can run it locally on your machine!
+
 There are many ways to run this application on your local machine:
 
 ### 🚀 Easiest Method: Using Docker Image Directly!
@@ -32,13 +34,13 @@ To get started with the NEON Dashboard Bokeh application, you can use the easies
 Open a terminal or command prompt and run the following command to pull the image:
 
 ```bash
-docker pull negin513/NEON-app
+docker pull negin513/neon-app
 ```
 
 Once the image is pulled successfully, run the Bokeh application in a Docker container with the following command. This will forward the port `8080`, making the application publicly available: 🚀
 
 ```bash
-docker run -p 8080:5006 negin513/NEON-app
+docker run -p 8080:5006 negin513/neon-app
 ```
 
 The Bokeh application should now be up and running inside the Docker container. You can access it in your web browser at http://localhost:8080. 🎉🎉🎉
