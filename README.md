@@ -1,6 +1,8 @@
 # 📚 NCAR-NEON Dashboard Readme 📚
 
 [![DOI](https://zenodo.org/badge/558070250.svg)](https://zenodo.org/doi/10.5281/zenodo.10956996)
+[![Neon Dashboard](https://img.shields.io/badge/Neon_Dashboard-Click_Here-green.svg)](https://ncar.nationalsciencedatafabric.org/neon-demo/v1/)
+
 
 **To access the NEON Dashboard, please visit the following link: [Neon Dashboard](https://ncar.nationalsciencedatafabric.org/neon-demo/v1/).**
 
@@ -34,13 +36,13 @@ To get started with the NEON Dashboard Bokeh application, you can use the easies
 Open a terminal or command prompt and run the following command to pull the image:
 
 ```bash
-docker pull negin513/neon-app
+docker pull negin513/neon-app_latest
 ```
 
 Once the image is pulled successfully, run the Bokeh application in a Docker container with the following command. This will forward the port `8080`, making the application publicly available: 🚀
 
 ```bash
-docker run -p 8080:5006 negin513/neon-app
+docker run -p 8080:5006 negin513/neon-app_latest
 ```
 
 The Bokeh application should now be up and running inside the Docker container. You can access it in your web browser at http://localhost:8080. 🎉🎉🎉
