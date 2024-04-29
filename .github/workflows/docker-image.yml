@@ -7,12 +7,18 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: checkout code
+      uses: actions/checkout@v3
+    
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --no-cache -tag negin513/neon-app:$(date +%s)
+      uses: docker/build-push-action@v2
+      with:
+        push: false
+        tags: negin513/neon-app:$(date +%s)
+
+      #run: docker build . --file Dockerfile --no-cache -tag negin513/neon-app:$(date +%s)
