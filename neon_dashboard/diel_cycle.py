@@ -21,6 +21,7 @@ from bokeh.models import (
     Slope,
     TableColumn,
 )
+
 from bokeh.plotting import figure
 from bokeh.tile_providers import get_provider, Vendors
 
